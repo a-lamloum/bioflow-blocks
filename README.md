@@ -27,7 +27,7 @@
 </p>
 
 <p>
-  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%201%2C%202%20Complete-brightgreen?style=flat-square" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--3%20Complete-brightgreen?style=flat-square" />
   <img alt="Tests" src="https://img.shields.io/badge/Tests-111%20passing-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
@@ -72,13 +72,17 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
-## Features (Phase 0 + Phase 1 + Phase 2)
+## Features (Phase 0–3 complete)
 
 - **Visual pipeline canvas** — Scratch-style puzzle-connector blocks, drag-and-drop, React Flow DAG
 - **45 blocks across 7 nf-core packs** — from nf-core/rnaseq to nf-core/sarek, nf-core/scrnaseq, and more
 - **Connection validation** — incompatible connections rejected with a beginner-friendly toast
 - **Mock simulation engine** — pure, deterministic, client-side; trace + QC report in under 3 seconds
 - **Block inspector** — beginner explanation + nf-core module name always visible side by side
+- **Command Bridge** — interactive dissector: click any part of the `nextflow run` command to get a plain-language explanation, nf-core docs link, and real-world examples
+- **Profile selector** — choose docker/singularity/conda/test with explanations; updates the full command instantly
+- **Params JSON preview** — see the `params.json` file that maps to your pipeline choices, with copy button
+- **Command Anatomy** — visual breakdown on the landing page showing every flag in the nf-core command
 - **Project save/load** — save pipelines to localStorage, load/duplicate/delete from the Projects panel in builder
 - **Editable samplesheet** — click the Samplesheet block to open a live-validated table with per-cell error hints
 - **Module registry** — searchable `/modules` page showing all 45 blocks with nf-core docs, filterable by pack and status
@@ -220,7 +224,7 @@ Every block in BioFlow Blocks maps to a real nf-core or Nextflow concept:
 | **Phase 0** | ✅ Complete | Visual prototype — 7 blocks, canvas, mock simulation, first mission |
 | **Phase 1** | ✅ Complete | Project save/load (localStorage), editable samplesheet validator, module registry at `/modules` |
 | **Phase 2** | ✅ Complete | Mission map, 3 missions, completion badges, reflection questions, dark mode, 45-block library |
-| **Phase 3** | 🔜 Planned | Command generator — visual pipeline → full `nextflow run nf-core/<pipeline>` command |
+| **Phase 3** | ✅ Complete | Command Bridge — interactive command dissector, profile selector, params JSON preview, docs integration |
 | **Phase 4** | 🔜 Planned | Tiny test-data execution in a sandboxed worker |
 | **Phase 5** | 🔜 Planned | nf-core concept packs — Variant Calling, Metagenomics, scRNA-seq (blocks already defined) |
 

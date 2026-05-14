@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TraceList } from './TraceList'
 import { ReportCard } from './ReportCard'
+import { CommandBridge, buildCommandParts, type CommandContext } from '@/components/command/CommandBridge'
+import { ProfileSelector } from '@/components/command/ProfileSelector'
+import { ParamsPreview } from '@/components/command/ParamsPreview'
 import type { SimulationResult, ValidationResult, WorkflowIR } from '@/types'
 
 interface RunPanelProps {
@@ -23,6 +26,8 @@ export function RunPanel({
 }: RunPanelProps) {
   const [expanded, setExpanded] = useState(true)
   const [showJson, setShowJson] = useState(false)
+  const [activeTab, setActiveTab] = useState<'trace' | 'command' | 'params'>('trace')
+  const [profile, setProfile] = useState('docker')
 
   const hasErrors = validationResult && !validationResult.valid && validationResult.errors.length > 0
 
@@ -103,42 +108,86 @@ export function RunPanel({
             </div>
           )}
 
-          {displayResult.reportCard && (
-            <ReportCard report={displayResult.reportCard} />
-          )}
+          {/* ── Tab bar ── */}
+          <div className="flex items-center gap-1 px-4 pt-2 pb-0 border-b border-border shrink-0">
+            {(['trace', 'command', 'params'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={[
+                  'px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-colors',
+                  activeTab === tab
+                    ? 'bg-surface border border-b-0 border-border text-teal-600'
+                    : 'text-fg-muted hover:text-fg-secondary',
+                ].join(' ')}
+                style={{ marginBottom: -1 }}
+              >
+                {tab === 'trace' && '📋 Trace'}
+                {tab === 'command' && '⌨️ Command'}
+                {tab === 'params' && '⚙️ Params'}
+              </button>
+            ))}
+          </div>
 
-          <TraceList entries={displayResult.trace} />
+          {/* ── Tab content ── */}
+          {activeTab === 'trace' && (
+            <div className="flex flex-col flex-1 overflow-y-auto">
+              {displayResult.reportCard && <ReportCard report={displayResult.reportCard} />}
+              <TraceList entries={displayResult.trace} />
 
-          {displayResult.generatedCommand && (
-            <div className="px-4 py-3 border-t border-border bg-surface-2">
-              <p className="text-xs text-fg-muted mb-1">
-                Illustrative command (educational only — not executed):
-              </p>
-              <code className="text-xs font-mono text-fg-secondary break-all">
-                {displayResult.generatedCommand}
-              </code>
+              {/* JSON toggle */}
+              <div className="px-4 py-2 border-t border-border">
+                <button
+                  aria-expanded={showJson}
+                  onClick={() => setShowJson(v => !v)}
+                  className="text-sm text-teal-500 hover:text-teal-600 focus-visible:ring-2 focus-visible:ring-focus-ring rounded"
+                >
+                  {showJson ? 'Hide workflow JSON ↑' : 'View workflow JSON ↓'}
+                </button>
+                {showJson && currentIR && (
+                  <div className="mt-2">
+                    <p className="text-xs text-fg-muted mb-1">
+                      Educational pipeline representation — not a real Nextflow workflow file.
+                    </p>
+                    <pre className="text-xs font-mono bg-surface-2 rounded-md p-3 overflow-x-auto border border-border max-h-48">
+                      {JSON.stringify(currentIR, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          <div className="px-4 py-2 border-t border-border">
-            <button
-              aria-expanded={showJson}
-              onClick={() => setShowJson(v => !v)}
-              className="text-sm text-teal-500 hover:text-teal-600 focus-visible:ring-2 focus-visible:ring-focus-ring rounded"
-            >
-              {showJson ? 'Hide workflow JSON ↑' : 'View workflow JSON ↓'}
-            </button>
-            {showJson && currentIR && (
-              <div className="mt-2">
-                <p className="text-xs text-fg-muted mb-1">
-                  Educational pipeline representation — not a real Nextflow workflow file.
-                </p>
-                <pre className="text-xs font-mono bg-surface-2 rounded-md p-3 overflow-x-auto border border-border max-h-48">
-                  {JSON.stringify(currentIR, null, 2)}
-                </pre>
-              </div>
-            )}
-          </div>
+          {activeTab === 'command' && (
+            <div className="flex flex-col gap-4 px-4 py-4 overflow-y-auto">
+              {/* Profile selector */}
+              <ProfileSelector selected={profile} onChange={setProfile} />
+              <div className="border-t border-border" />
+              {/* Command bridge */}
+              <CommandBridge
+                ctx={{
+                  pipelineName: 'nf-core/rnaseq',
+                  pipelineUrl: 'https://nf-co.re/rnaseq',
+                  profile,
+                  genome: 'GRCh38',
+                  hasParameterBlock: false,
+                  hasProfileBlock: false,
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'params' && (
+            <div className="flex flex-col gap-4 px-4 py-4 overflow-y-auto">
+              <ParamsPreview
+                pipelineName="nf-core/rnaseq"
+                profile={profile}
+                genome="GRCh38"
+              />
+            </div>
+          )}
+
+          <div className="px-4 py-2 border-t border-border shrink-0" />
 
           {!isDemo && (
           <div className="px-4 py-2 border-t border-border flex justify-end">

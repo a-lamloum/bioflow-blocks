@@ -285,6 +285,43 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── COMMAND ANATOMY ── */}
+      <section className="px-6 py-20" style={{ background: 'oklch(93% 0.012 85)' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="reveal text-center mb-10">
+            <h2 className="text-3xl font-bold text-fg-primary mb-3">From blocks to a real nf-core command</h2>
+            <p className="text-lg text-fg-secondary">
+              Every block you build maps directly to a flag in a real{' '}
+              <code className="font-mono text-sm bg-surface px-1.5 py-0.5 rounded border border-border">nextflow run</code> command.
+              Click any part to learn what it means.
+            </p>
+          </div>
+          <div className="reveal flex flex-wrap gap-2 p-6 rounded-2xl border border-border bg-surface shadow-sm justify-center">
+            {[
+              { text: 'nextflow run', label: 'CLI', color: 'oklch(44% 0.150 270)' },
+              { text: 'nf-core/rnaseq', label: 'Pipeline', color: 'oklch(52% 0.22 152)' },
+              { text: '-profile docker', label: 'Profile', color: 'oklch(58% 0.20 212)' },
+              { text: '--input samplesheet.csv', label: '--input', color: 'oklch(68% 0.150 75)' },
+              { text: '--genome GRCh38', label: '--genome', color: 'oklch(68% 0.150 75)' },
+              { text: '--outdir results', label: '--outdir', color: 'oklch(52% 0.20 232)' },
+            ].map(part => (
+              <div key={part.text} className="flex flex-col items-center gap-1">
+                <span
+                  className="px-3 py-2 rounded-lg text-sm font-mono font-bold text-block-text"
+                  style={{ background: part.color, boxShadow: `0 3px 0 oklch(0% 0 0 / 0.20)` }}
+                >
+                  {part.text}
+                </span>
+                <span className="text-xs text-fg-muted">{part.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="reveal text-center mt-6 text-sm text-fg-muted" style={{ transitionDelay: '150ms' }}>
+            The <strong>Command</strong> tab in the Run panel explains each part interactively — with profile picker and params file preview.
+          </p>
+        </div>
+      </section>
+
       {/* ── BLOCK SHOWCASE ── */}
       <section className="px-6 py-20" style={{ background: 'oklch(12% 0.025 200)' }}>
         <div className="max-w-5xl mx-auto text-center">
