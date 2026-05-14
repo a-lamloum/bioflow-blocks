@@ -47,6 +47,20 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
+## Demo
+
+<div align="center">
+  <img
+    src="img/screenshot.png"
+    alt="BioFlow Blocks — completed RNA-seq QC pipeline with inspector and QC report"
+    width="100%"
+    style="border-radius: 12px;"
+  />
+  <p><em>A completed RNA-seq QC pipeline: blocks connected on the canvas, block inspector open on the right, QC report card and trace in the run panel below.</em></p>
+</div>
+
+---
+
 ## Who is it for?
 
 | Persona | Context |
@@ -83,7 +97,6 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 ```bash
 git clone git@github.com:a-lamloum/bioflow-blocks.git
 cd bioflow-blocks
-git checkout 001-phase0-rnaseq-playground
 npm install
 npm run dev
 ```
