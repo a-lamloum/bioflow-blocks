@@ -1,15 +1,8 @@
-import type { BlockDefinition, BlockType, DataType } from '@/types'
+import type { BlockDefinition, BlockType, DataType, PackId } from '@/types'
 
 // ─── DataType Compatibility Matrix ───────────────────────────────────────────
-// Maps each source DataType to the target DataTypes it may connect to.
-// Used by PipelineCanvas.isValidConnection and the validator.
+// Both ends of a valid connection carry the same DataType (identity mapping).
 
-// Each output port carries a DataType. A valid connection requires the target
-// input port to declare the SAME DataType. The matrix maps each type to itself
-// (identity) because both ends of a wire carry the same data.
-//
-// The only multi-entry rows are types that can flow into MULTIPLE input types —
-// none exist here; all connections are 1-to-1 by type.
 export const DATA_TYPE_COMPATIBILITY: Record<DataType, DataType[]> = {
   pipeline_context: ['pipeline_context'],
   sample_records:   ['sample_records'],
@@ -20,148 +13,823 @@ export const DATA_TYPE_COMPATIBILITY: Record<DataType, DataType[]> = {
   final_output:     [],
 }
 
-// ─── Block Definitions ───────────────────────────────────────────────────────
+// ─── Pack metadata ────────────────────────────────────────────────────────────
+
+export interface PackMeta {
+  id: PackId
+  name: string
+  description: string
+  icon: string
+  color: string
+  phase: number
+  available: boolean
+}
+
+export const PACKS: PackMeta[] = [
+  {
+    id: 'rnaseq_qc',
+    name: 'RNA-seq QC',
+    description: 'Quality control for RNA sequencing data — the first step in any RNA-seq workflow.',
+    icon: '🧬',
+    color: 'oklch(52% 0.22 152)',
+    phase: 0,
+    available: true,
+  },
+  {
+    id: 'fastq_basics',
+    name: 'FASTQ Basics',
+    description: 'Understand sequencing files, paired-end reads, adapter contamination, and file formats.',
+    icon: '📄',
+    color: 'oklch(58% 0.20 212)',
+    phase: 0,
+    available: true,
+  },
+  {
+    id: 'rnaseq_full',
+    name: 'RNA-seq Full Pipeline',
+    description: 'Complete RNA-seq workflow: alignment, feature counting, and differential expression analysis.',
+    icon: '🔬',
+    color: 'oklch(50% 0.25 302)',
+    phase: 1,
+    available: false,
+  },
+  {
+    id: 'variant_calling',
+    name: 'Variant Calling',
+    description: 'Identify genetic variants from sequencing data using GATK and alignment tools.',
+    icon: '🧪',
+    color: 'oklch(52% 0.20 232)',
+    phase: 2,
+    available: false,
+  },
+  {
+    id: 'metagenomics',
+    name: 'Metagenomics',
+    description: 'Classify and profile microbial communities from shotgun sequencing data.',
+    icon: '🦠',
+    color: 'oklch(50% 0.22 258)',
+    phase: 2,
+    available: false,
+  },
+  {
+    id: 'single_cell',
+    name: 'Single Cell',
+    description: 'Analyse single-cell RNA sequencing data: demultiplexing, clustering, and visualization.',
+    icon: '🔴',
+    color: 'oklch(50% 0.25 15)',
+    phase: 2,
+    available: false,
+  },
+  {
+    id: 'nfcore_tools',
+    name: 'nf-core Tools',
+    description: 'Learn how to create modules, lint pipelines, and contribute to the nf-core community.',
+    icon: '🛠️',
+    color: 'oklch(52% 0.18 85)',
+    phase: 3,
+    available: false,
+  },
+]
+
+// ─── Block Definitions ────────────────────────────────────────────────────────
+
+const B = (def: BlockDefinition): BlockDefinition => def
 
 export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
-  start_pipeline: {
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: RNA-seq QC  (Phase 0 — available)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  start_pipeline: B({
     type: 'start_pipeline',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Start Pipeline',
     technicalConcept: 'Workflow entry point',
-    description:
-      'This is where your pipeline begins. Every pipeline needs exactly one starting block.',
-    technicalDetail:
-      'In Nextflow, a workflow block defines the entry point of the DSL2 pipeline. ' +
-      'This block initialises the pipeline context and triggers downstream processes.',
-    category: 'pipeline',
-    icon: '🚀',
+    description: 'This is where your pipeline begins. Every pipeline needs exactly one starting block.',
+    technicalDetail: 'In Nextflow DSL2, the workflow {} block defines the entry point. This block initialises the pipeline context and triggers downstream processes.',
+    category: 'pipeline', icon: '🚀',
     inputPorts: [],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake:
-      'Adding more than one Start Pipeline block. Only one is allowed per pipeline.',
+    commonMistake: 'Adding more than one Start Pipeline block. Only one is allowed per pipeline.',
     exampleOutput: 'Initialises the pipeline and passes context to the next block.',
     nfCoreDocsLink: 'https://nf-co.re/docs/specifications/pipelines/overview',
-  },
+  }),
 
-  samplesheet: {
+  samplesheet: B({
     type: 'samplesheet',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Samplesheet',
     technicalConcept: 'Pipeline input samplesheet / params.input',
-    description:
-      'This table tells the pipeline which files belong to each sample. ' +
-      'Each row is one biological sample with its sequencing files.',
-    technicalDetail:
-      'nf-core pipelines accept input via a CSV samplesheet referenced by --input. ' +
-      'Required columns vary by pipeline; RNA-seq needs sample, fastq_1, fastq_2, strandedness.',
-    category: 'data',
-    icon: '📋',
+    description: 'This table tells the pipeline which files belong to each sample. Each row is one biological sample.',
+    technicalDetail: 'nf-core pipelines accept input via a CSV samplesheet referenced by --input. Required columns vary by pipeline; RNA-seq needs sample, fastq_1, fastq_2, strandedness.',
+    category: 'data', icon: '📋',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-samples', label: 'Sample records', dataType: 'sample_records' }],
-    commonMistake:
-      'Leaving fastq_2 empty for paired-end data. Both R1 and R2 files are required.',
+    commonMistake: 'Leaving fastq_2 empty for paired-end data. Both R1 and R2 files are required.',
     exampleOutput: 'A validated list of sample records ready for processing.',
     nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
-  },
+  }),
 
-  input_fastq: {
+  input_fastq: B({
     type: 'input_fastq',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Input FASTQ',
     technicalConcept: 'FASTQ input channel / paired-end reads',
-    description:
-      'These are raw sequencing read files from a sequencing machine. ' +
-      'Each sample produces two files (R1 and R2) in paired-end mode.',
-    technicalDetail:
-      'Nextflow channels carry file paths between processes. FASTQ files are emitted as ' +
-      'tuples of [meta, fastq_1, fastq_2] for paired-end libraries.',
-    category: 'data',
-    icon: '🧬',
+    description: 'These are raw sequencing read files from a sequencing machine. Each sample produces two files (R1 and R2) in paired-end mode.',
+    technicalDetail: 'Nextflow channels carry file paths between processes. FASTQ files are emitted as tuples of [meta, fastq_1, fastq_2] for paired-end libraries.',
+    category: 'data', icon: '🧬',
     inputPorts: [{ id: 'in-samples', label: 'Sample records', dataType: 'sample_records' }],
     outputPorts: [{ id: 'out-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
-    commonMistake:
-      'Connecting this block before the Samplesheet block. The samplesheet must come first.',
+    commonMistake: 'Connecting this block before the Samplesheet block. The samplesheet must come first.',
     exampleOutput: 'Paired-end FASTQ read files for each sample, ready for analysis.',
-  },
+    realToolExamples: ['FASTQ', 'gzip'],
+  }),
 
-  qc_step: {
+  qc_step: B({
     type: 'qc_step',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'QC Step',
-    technicalConcept: 'Quality-control process / module concept (e.g. FastQC)',
-    description:
-      'This checks whether your sequencing reads look healthy. ' +
-      'It measures read quality, length, and common sequencing issues.',
-    technicalDetail:
-      'nf-core modules wrap tools like FastQC into reusable process definitions. ' +
-      'Quality metrics are emitted as report files consumed by MultiQC.',
-    category: 'analysis',
-    icon: '🔬',
+    technicalConcept: 'Quality-control process / module (FastQC concept)',
+    description: 'This checks whether your sequencing reads look healthy — measuring quality, length, and common issues.',
+    technicalDetail: 'nf-core modules wrap tools like FastQC into reusable process definitions. Quality metrics are collected and emitted as report files consumed by MultiQC.',
+    category: 'analysis', icon: '🔬',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-qc', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake:
-      'Skipping this step. QC should always run before downstream analysis.',
+    commonMistake: 'Skipping this step. QC should always run before downstream analysis.',
     exampleOutput: 'A QC report showing read quality scores, length distribution, and GC content.',
     nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-  },
+    realToolExamples: ['FastQC', 'fastp'],
+  }),
 
-  trim_reads: {
+  trim_reads: B({
     type: 'trim_reads',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Trim Reads',
-    technicalConcept: 'Read preprocessing process / module concept (e.g. Trimmomatic, fastp)',
-    description:
-      'This removes low-quality parts from reads before later analysis. ' +
-      'Trimming improves the reliability of downstream results.',
-    technicalDetail:
-      'Preprocessing modules trim adapter sequences and low-quality bases. ' +
-      'fastp and Trimmomatic are common nf-core module wrappers for this step.',
-    category: 'analysis',
-    icon: '✂️',
+    technicalConcept: 'Read preprocessing process / module (Trimmomatic / fastp concept)',
+    description: 'This removes low-quality parts from reads before later analysis. Trimming improves the reliability of downstream results.',
+    technicalDetail: 'Preprocessing modules trim adapter sequences and low-quality bases. fastp and Trimmomatic are common nf-core module wrappers for this step.',
+    category: 'analysis', icon: '✂️',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-trimmed', label: 'Trimmed reads', dataType: 'trimmed_reads' }],
-    commonMistake:
-      'Placing Trim Reads after QC Step. Trimming should happen before or alongside QC, not after.',
+    commonMistake: 'Placing Trim Reads after QC Step. Trimming should happen before or alongside QC.',
     exampleOutput: 'Cleaned FASTQ files with adapter sequences and low-quality bases removed.',
-  },
+    realToolExamples: ['fastp', 'Trimmomatic', 'cutadapt'],
+  }),
 
-  generate_report: {
+  generate_report: B({
     type: 'generate_report',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Generate Report',
     technicalConcept: 'Report aggregation / MultiQC-like summary step',
-    description:
-      'This gathers results from earlier steps into a readable summary report. ' +
-      'You can see quality metrics for all samples in one place.',
-    technicalDetail:
-      'MultiQC aggregates QC outputs from many tools into a single HTML report. ' +
-      'In nf-core pipelines, a MULTIQC module is typically the final reporting step.',
-    category: 'output',
-    icon: '📊',
+    description: 'This gathers results from earlier steps into one readable summary report.',
+    technicalDetail: 'MultiQC aggregates QC outputs from many tools into a single HTML report. In nf-core pipelines, a MULTIQC module is typically the final reporting step.',
+    category: 'output', icon: '📊',
     inputPorts: [
       { id: 'in-qc', label: 'QC output', dataType: 'qc_output' },
       { id: 'in-trimmed', label: 'Trimmed reads (optional)', dataType: 'trimmed_reads' },
     ],
     outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
-    commonMistake:
-      'Not connecting any input to Generate Report. It needs at least one QC or analysis output.',
+    commonMistake: 'Not connecting any input to Generate Report. It needs at least one QC or analysis output.',
     exampleOutput: 'An HTML summary report showing quality metrics for every sample.',
     nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-  },
+    realToolExamples: ['MultiQC'],
+  }),
 
-  output_results: {
+  output_results: B({
     type: 'output_results',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Output Results',
     technicalConcept: 'Output directory / publishDir directive',
-    description:
-      'This is where your final results appear. ' +
-      'All files saved here are the deliverables from your pipeline run.',
-    technicalDetail:
-      "Nextflow's publishDir directive copies or links process outputs to a final results folder. " +
-      'nf-core pipelines use --outdir to set this path.',
-    category: 'output',
-    icon: '📁',
+    description: "This is where your final results appear. All files saved here are the deliverables from your pipeline run.",
+    technicalDetail: "Nextflow's publishDir directive copies process outputs to a final results folder. nf-core pipelines use --outdir to set this path.",
+    category: 'output', icon: '📁',
     inputPorts: [{ id: 'in-report', label: 'Report data', dataType: 'report_data' }],
     outputPorts: [],
-    commonMistake:
-      'Forgetting to connect Generate Report before Output Results. The report block must come first.',
+    commonMistake: 'Forgetting to connect Generate Report before Output Results. The report block must come first.',
     exampleOutput: 'Final QC report and result files saved to the output directory.',
     nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
-  },
+  }),
+
+  run_profile: B({
+    type: 'run_profile',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'command_generation',
+    displayName: 'Run Profile',
+    technicalConcept: '-profile flag / execution environment',
+    description: "This tells the pipeline where and how to run — using Docker, Singularity, Conda, or a test environment.",
+    technicalDetail: 'The -profile flag selects a configuration profile. nf-core pipelines ship with docker, singularity, conda, and test profiles out of the box.',
+    category: 'pipeline', icon: '⚙️',
+    inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    commonMistake: 'Not selecting a profile. Without one, Nextflow may fail to find Docker or Conda.',
+    exampleOutput: 'A profile configuration passed to all pipeline steps.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+  }),
+
+  parameter_setting: B({
+    type: 'parameter_setting',
+    pack: 'rnaseq_qc', status: 'available', executionMode: 'command_generation',
+    displayName: 'Parameter Setting',
+    technicalConcept: 'params / nextflow_schema.json concept',
+    description: "This is a setting that changes how the pipeline behaves — like choosing a genome or setting a thread count.",
+    technicalDetail: 'nf-core pipelines use nextflow_schema.json to define and validate parameters. Params are passed as --param_name value on the command line.',
+    category: 'pipeline', icon: '🔧',
+    inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    commonMistake: 'Confusing parameters with profiles. Params change analysis settings; profiles change the compute environment.',
+    exampleOutput: 'A parameter value added to the generated nextflow run command.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: FASTQ Basics  (Phase 0 stretch — available)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  paired_validator: B({
+    type: 'paired_validator',
+    pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
+    displayName: 'Paired-end Validator',
+    technicalConcept: 'Paired-end read file validation',
+    description: 'Checks that every sample has matching R1 and R2 files before the pipeline starts.',
+    technicalDetail: 'Paired-end sequencing produces two files per sample (R1 forward, R2 reverse). Many tools require both files and will fail silently if one is missing or mismatched.',
+    category: 'data', icon: '🔗',
+    inputPorts: [{ id: 'in-samples', label: 'Sample records', dataType: 'sample_records' }],
+    outputPorts: [{ id: 'out-samples', label: 'Validated samples', dataType: 'sample_records' }],
+    commonMistake: 'Assuming single-end data is paired. Always check whether your sequencing library is single or paired-end.',
+    exampleOutput: 'A validation report listing which samples passed or failed the pairing check.',
+    realToolExamples: ['nf-core samplesheet check'],
+  }),
+
+  adapter_detector: B({
+    type: 'adapter_detector',
+    pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
+    displayName: 'Adapter Detector',
+    technicalConcept: 'Adapter contamination detection',
+    description: 'Scans reads to identify and flag sequencing adapter sequences before trimming.',
+    technicalDetail: 'Adapter sequences are short DNA fragments added during library preparation. They must be detected and removed before alignment; tools like fastp and FastQC can identify them automatically.',
+    category: 'analysis', icon: '🔎',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-reads', label: 'Flagged reads', dataType: 'fastq_reads' }],
+    commonMistake: 'Skipping adapter detection and going straight to alignment. Adapter contamination causes misaligned reads and unreliable results.',
+    exampleOutput: 'A report showing which adapter sequences were detected and at what frequency.',
+    realToolExamples: ['FastQC', 'fastp', 'AdapterRemoval'],
+  }),
+
+  read_length_checker: B({
+    type: 'read_length_checker',
+    pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
+    displayName: 'Read Length Checker',
+    technicalConcept: 'Read length distribution QC metric',
+    description: 'Checks that all reads have the expected length and flags unusual distributions.',
+    technicalDetail: 'Modern Illumina short-read sequencing produces fixed-length reads (e.g. 150bp). Variable read lengths may indicate quality trimming issues or mixed library types.',
+    category: 'analysis', icon: '📏',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-qc', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Ignoring unexpected read length variation. It often signals a problem with library preparation.',
+    exampleOutput: 'A histogram of read lengths across all samples.',
+    realToolExamples: ['FastQC', 'seqkit'],
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: RNA-seq Full Pipeline  (Phase 1 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  genome_index: B({
+    type: 'genome_index',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Genome Index',
+    technicalConcept: 'Genome indexing step / STAR or HISAT2 index',
+    description: 'Builds a searchable index of the reference genome so reads can be aligned quickly.',
+    technicalDetail: 'Aligners like STAR and HISAT2 require a pre-built index of the reference genome. Indexing is computationally expensive but done once per genome/annotation combination.',
+    category: 'data', icon: '📚',
+    inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    outputPorts: [{ id: 'out-context', label: 'Indexed genome', dataType: 'pipeline_context' }],
+    commonMistake: 'Using an index built from a different genome version than the annotation file.',
+    exampleOutput: 'A folder of index files ready for alignment.',
+    realToolExamples: ['STAR', 'HISAT2', 'Bowtie2'],
+  }),
+
+  read_aligner: B({
+    type: 'read_aligner',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Read Aligner',
+    technicalConcept: 'Read alignment process / STAR or HISAT2 module',
+    description: 'Maps your sequencing reads to the reference genome to find where each read came from.',
+    technicalDetail: 'RNA-seq aligners like STAR and HISAT2 are splice-aware — they can map reads that span exon-exon junctions in mRNA. Output is a BAM file containing aligned reads.',
+    category: 'analysis', icon: '🎯',
+    inputPorts: [
+      { id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' },
+    ],
+    outputPorts: [{ id: 'out-bam', label: 'Aligned reads', dataType: 'qc_output' }],
+    commonMistake: 'Using a DNA aligner (like BWA) for RNA-seq data. RNA-seq requires a splice-aware aligner.',
+    exampleOutput: 'A BAM file with millions of reads mapped to genome coordinates.',
+    realToolExamples: ['STAR', 'HISAT2', 'SALMON'],
+  }),
+
+  bam_sorter: B({
+    type: 'bam_sorter',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'BAM Sorter',
+    technicalConcept: 'SAMtools sort — coordinate-sorted BAM',
+    description: 'Sorts the aligned reads by their position in the genome, which most tools require.',
+    technicalDetail: 'BAM files from aligners are often in name order. Most downstream tools require coordinate-sorted BAMs. SAMtools sort reorders reads by chromosome and position.',
+    category: 'analysis', icon: '🗂️',
+    inputPorts: [{ id: 'in-bam', label: 'Aligned reads', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-bam', label: 'Sorted BAM', dataType: 'qc_output' }],
+    commonMistake: 'Forgetting to sort before indexing. BAM indexing requires coordinate-sorted files.',
+    exampleOutput: 'A coordinate-sorted BAM file.',
+    realToolExamples: ['SAMtools sort'],
+  }),
+
+  bam_indexer: B({
+    type: 'bam_indexer',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'BAM Indexer',
+    technicalConcept: 'SAMtools index — .bai index file',
+    description: 'Creates an index file alongside your BAM file so genome browsers can read it quickly.',
+    technicalDetail: 'BAM index (.bai) files allow random access to reads at specific genomic coordinates without reading the whole file. Required by IGV, genome browsers, and variant callers.',
+    category: 'analysis', icon: '🏷️',
+    inputPorts: [{ id: 'in-bam', label: 'Sorted BAM', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-bam', label: 'Indexed BAM', dataType: 'qc_output' }],
+    commonMistake: 'Running this before BAM Sorter. The input must be coordinate-sorted.',
+    exampleOutput: 'A .bai index file alongside the sorted BAM.',
+    realToolExamples: ['SAMtools index'],
+  }),
+
+  feature_counter: B({
+    type: 'feature_counter',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Feature Counter',
+    technicalConcept: 'Read counting per gene / featureCounts or HTSeq',
+    description: 'Counts how many reads overlap each gene — this is the raw data for expression analysis.',
+    technicalDetail: 'Feature counting assigns aligned reads to genomic features (genes, exons) using a GTF annotation file. The output is a count matrix used for differential expression analysis.',
+    category: 'analysis', icon: '🔢',
+    inputPorts: [{ id: 'in-bam', label: 'Indexed BAM', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-counts', label: 'Count matrix', dataType: 'report_data' }],
+    commonMistake: 'Using the wrong strandedness setting. Mismatched strandedness can reduce usable reads by 50% or more.',
+    exampleOutput: 'A matrix of read counts per gene per sample.',
+    realToolExamples: ['featureCounts', 'HTSeq', 'SALMON'],
+  }),
+
+  deseq2: B({
+    type: 'deseq2',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'DESeq2 Analysis',
+    technicalConcept: 'Differential expression analysis / DESeq2 R package',
+    description: 'Finds which genes are expressed differently between your sample groups.',
+    technicalDetail: 'DESeq2 uses a negative binomial model to identify statistically significant changes in gene expression between conditions. Output includes fold changes, p-values, and adjusted p-values.',
+    category: 'analysis', icon: '📈',
+    inputPorts: [{ id: 'in-counts', label: 'Count matrix', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-de', label: 'DE results', dataType: 'report_data' }],
+    commonMistake: 'Running DE with fewer than 3 replicates per group. Statistical power is very low with small n.',
+    exampleOutput: 'A table of differentially expressed genes with log2 fold changes and adjusted p-values.',
+    realToolExamples: ['DESeq2', 'edgeR', 'limma'],
+  }),
+
+  volcano_plot: B({
+    type: 'volcano_plot',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Volcano Plot',
+    technicalConcept: 'DE results visualization / ggplot2 concept',
+    description: 'Creates a volcano plot showing which genes are significantly up- or down-regulated.',
+    technicalDetail: 'Volcano plots display -log10(adjusted p-value) vs log2(fold change) for all tested genes. Significantly DE genes cluster at the top left and right.',
+    category: 'output', icon: '🌋',
+    inputPorts: [{ id: 'in-de', label: 'DE results', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-plot', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Not setting an appropriate fold-change cutoff alongside the FDR threshold.',
+    exampleOutput: 'A volcano plot image highlighting up- and down-regulated genes.',
+    realToolExamples: ['ggplot2', 'EnhancedVolcano'],
+  }),
+
+  pathway_analysis: B({
+    type: 'pathway_analysis',
+    pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Pathway Analysis',
+    technicalConcept: 'Gene set enrichment / GO and KEGG analysis',
+    description: 'Finds which biological pathways are enriched in your differentially expressed genes.',
+    technicalDetail: 'Gene set enrichment analysis (GSEA) and over-representation analysis (ORA) test whether a set of DE genes is enriched in known biological pathways (GO, KEGG, Reactome).',
+    category: 'output', icon: '🗺️',
+    inputPorts: [{ id: 'in-de', label: 'DE results', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-pathways', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Interpreting pathway p-values without considering background gene list selection.',
+    exampleOutput: 'A table and dot plot of enriched GO/KEGG terms with FDR-corrected p-values.',
+    realToolExamples: ['clusterProfiler', 'fgsea', 'g:Profiler'],
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: Variant Calling  (Phase 2 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  reference_genome: B({
+    type: 'reference_genome',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Reference Genome',
+    technicalConcept: 'Reference FASTA / genome assembly',
+    description: 'The reference sequence every read is compared against to find differences.',
+    technicalDetail: 'Variant calling requires a reference genome FASTA file. The choice of reference (GRCh38, GRCh37, etc.) must match the annotation and downstream databases.',
+    category: 'data', icon: '🗺️',
+    inputPorts: [],
+    outputPorts: [{ id: 'out-ref', label: 'Reference data', dataType: 'pipeline_context' }],
+    commonMistake: 'Mixing reference genome versions between pipeline steps.',
+    exampleOutput: 'A reference FASTA and its BWA/GATK index files.',
+    realToolExamples: ['GATK', 'BWA'],
+  }),
+
+  bwa_aligner: B({
+    type: 'bwa_aligner',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'BWA Aligner',
+    technicalConcept: 'DNA read alignment / BWA-MEM2 module',
+    description: 'Aligns your DNA reads to the reference genome. BWA is the standard for variant calling.',
+    technicalDetail: 'BWA-MEM2 aligns short DNA reads to a reference genome. Unlike RNA-seq aligners, it does not need to be splice-aware. Output is a SAM/BAM file.',
+    category: 'analysis', icon: '🔍',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-bam', label: 'Aligned reads', dataType: 'qc_output' }],
+    commonMistake: 'Using STAR or HISAT2 (RNA-seq aligners) for DNA variant calling.',
+    exampleOutput: 'A BAM file with DNA reads aligned to the reference.',
+    realToolExamples: ['BWA-MEM2', 'Bowtie2'],
+  }),
+
+  mark_duplicates: B({
+    type: 'mark_duplicates',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Mark Duplicates',
+    technicalConcept: 'PCR duplicate removal / Picard MarkDuplicates',
+    description: 'Flags reads that are PCR copies of each other so variant callers can ignore them.',
+    technicalDetail: 'Library amplification creates duplicate reads from the same DNA molecule. These duplicates can inflate variant allele frequencies. Picard MarkDuplicates identifies and flags them by comparing read positions.',
+    category: 'analysis', icon: '👥',
+    inputPorts: [{ id: 'in-bam', label: 'Aligned reads', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-bam', label: 'Deduped BAM', dataType: 'qc_output' }],
+    commonMistake: 'Running this step on amplicon sequencing data where all reads are intentional duplicates.',
+    exampleOutput: 'A BAM with duplicate reads flagged and a duplication rate metric.',
+    realToolExamples: ['Picard MarkDuplicates', 'GATK MarkDuplicatesSpark', 'samblaster'],
+  }),
+
+  base_recalibrator: B({
+    type: 'base_recalibrator',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Base Recalibrator',
+    technicalConcept: 'Base quality score recalibration / GATK BQSR',
+    description: 'Corrects systematic errors in the quality scores assigned to each base by the sequencer.',
+    technicalDetail: 'GATK BQSR (Base Quality Score Recalibration) uses known variant sites to model and correct sequencer quality score errors, improving variant calling accuracy.',
+    category: 'analysis', icon: '🎚️',
+    inputPorts: [{ id: 'in-bam', label: 'Deduped BAM', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-bam', label: 'Recalibrated BAM', dataType: 'qc_output' }],
+    commonMistake: 'Skipping BQSR for non-model organisms where known variant databases are unavailable.',
+    exampleOutput: 'A BAM with recalibrated base quality scores.',
+    realToolExamples: ['GATK BaseRecalibrator', 'ApplyBQSR'],
+  }),
+
+  variant_caller: B({
+    type: 'variant_caller',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Variant Caller',
+    technicalConcept: 'SNP/INDEL calling / GATK HaplotypeCaller',
+    description: 'Finds places where your sample differs from the reference genome.',
+    technicalDetail: 'GATK HaplotypeCaller locally reassembles reads around candidate variants and uses a probabilistic model to call SNPs and INDELs. Output is a GVCF or VCF file.',
+    category: 'analysis', icon: '🧫',
+    inputPorts: [{ id: 'in-bam', label: 'Recalibrated BAM', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-vcf', label: 'Variant calls', dataType: 'report_data' }],
+    commonMistake: 'Using germline variant calling tools for somatic (tumour/normal) analysis without the right mode.',
+    exampleOutput: 'A VCF file listing all detected variants with genotypes and quality scores.',
+    realToolExamples: ['GATK HaplotypeCaller', 'DeepVariant', 'Strelka2'],
+  }),
+
+  genotype_gvcf: B({
+    type: 'genotype_gvcf',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Genotype GVCFs',
+    technicalConcept: 'Joint genotyping / GATK GenotypeGVCFs',
+    description: 'Combines individual sample GVCFs into a final multi-sample VCF for cohort analysis.',
+    technicalDetail: 'In the GATK best-practices joint calling workflow, each sample is first processed with HaplotypeCaller in GVCF mode. GenotypeGVCFs then performs joint genotyping across all samples.',
+    category: 'analysis', icon: '🔀',
+    inputPorts: [{ id: 'in-gvcf', label: 'Variant calls', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-vcf', label: 'Joint VCF', dataType: 'report_data' }],
+    commonMistake: 'Calling variants per-sample without joint genotyping when working with a cohort.',
+    exampleOutput: 'A multi-sample VCF with genotypes for all individuals.',
+    realToolExamples: ['GATK GenotypeGVCFs', 'GLnexus'],
+  }),
+
+  variant_filter: B({
+    type: 'variant_filter',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Variant Filter',
+    technicalConcept: 'Variant quality filtering / VQSR or hard filters',
+    description: 'Removes low-quality or artefactual variants from your VCF.',
+    technicalDetail: 'GATK VQSR uses a machine-learning model trained on known variant sites to score and filter variants. For smaller datasets, hard filters based on quality metrics are applied instead.',
+    category: 'analysis', icon: '🪄',
+    inputPorts: [{ id: 'in-vcf', label: 'Joint VCF', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-vcf', label: 'Filtered VCF', dataType: 'report_data' }],
+    commonMistake: 'Applying VQSR with too few variants. VQSR requires sufficient training data to be reliable.',
+    exampleOutput: 'A filtered VCF with PASS/FAIL flags on each variant.',
+    realToolExamples: ['GATK VQSR', 'BCFtools filter'],
+  }),
+
+  vcf_annotator: B({
+    type: 'vcf_annotator',
+    pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'VCF Annotator',
+    technicalConcept: 'Variant annotation / VEP or ANNOVAR',
+    description: 'Adds biological meaning to each variant — which gene it affects and what it might do.',
+    technicalDetail: 'Variant Effect Predictor (VEP) annotates each variant with gene names, transcript effects, population frequencies, and predicted functional impact (SIFT, PolyPhen).',
+    category: 'output', icon: '🏷️',
+    inputPorts: [{ id: 'in-vcf', label: 'Filtered VCF', dataType: 'report_data' }],
+    outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Annotating with an outdated database. Population frequencies and consequence predictions change with database releases.',
+    exampleOutput: 'An annotated VCF with gene names, variant consequences, and population frequencies.',
+    realToolExamples: ['VEP', 'ANNOVAR', 'SnpEff'],
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: Metagenomics  (Phase 2 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  host_removal: B({
+    type: 'host_removal',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Host Removal',
+    technicalConcept: 'Host read decontamination / Bowtie2 host filter',
+    description: 'Removes reads that come from the host organism so only microbial reads remain.',
+    technicalDetail: 'Metagenomic samples from clinical or environmental sources contain host DNA. Host reads are removed by aligning to the host reference genome and discarding mapped reads.',
+    category: 'analysis', icon: '🧹',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
+    commonMistake: 'Skipping host removal in clinical metagenomics. Human reads can dominate a sample.',
+    exampleOutput: 'FASTQ files with human reads removed.',
+    realToolExamples: ['Bowtie2', 'KneadData'],
+  }),
+
+  kraken2: B({
+    type: 'kraken2',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Kraken2 Classifier',
+    technicalConcept: 'Taxonomic classification / Kraken2 k-mer approach',
+    description: 'Identifies which organisms are present in your sample by matching reads to known genomes.',
+    technicalDetail: 'Kraken2 uses exact k-mer matches against a pre-built database of reference genomes to assign taxonomic labels to reads. It is very fast but sensitive to database completeness.',
+    category: 'analysis', icon: '🧫',
+    inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-taxonomy', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Using a database that is too small for your environment. Novel organisms will be unclassified.',
+    exampleOutput: 'A taxonomic report listing which species are present and in what proportion.',
+    realToolExamples: ['Kraken2', 'Krakentools'],
+  }),
+
+  bracken: B({
+    type: 'bracken',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Bracken Abundance',
+    technicalConcept: 'Bayesian abundance estimation / Bracken',
+    description: 'Estimates the relative abundance of each organism more accurately than raw read counts.',
+    technicalDetail: 'Bracken (Bayesian Reestimation of Abundance after Classification with KrakEN) re-estimates species-level abundance from Kraken2 output using a probabilistic model.',
+    category: 'analysis', icon: '📉',
+    inputPorts: [{ id: 'in-taxonomy', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-abundance', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Using Bracken results without Kraken2 output — Bracken requires the Kraken2 report format.',
+    exampleOutput: 'Abundance estimates for each species as counts and percentages.',
+    realToolExamples: ['Bracken'],
+  }),
+
+  krona_viz: B({
+    type: 'krona_viz',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Krona Visualization',
+    technicalConcept: 'Interactive taxonomy visualization / KronaTools',
+    description: 'Creates an interactive sunburst chart of the microbial community composition.',
+    technicalDetail: 'KronaTools generates interactive HTML charts that allow hierarchical exploration of taxonomy results from classifiers like Kraken2, Centrifuge, or DIAMOND.',
+    category: 'output', icon: '☀️',
+    inputPorts: [{ id: 'in-abundance', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Using Krona as the primary analysis tool — it is for visualization only, not quantification.',
+    exampleOutput: 'An interactive HTML Krona chart of the sample community.',
+    realToolExamples: ['KronaTools'],
+  }),
+
+  metaphlan: B({
+    type: 'metaphlan',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'MetaPhlAn Profiler',
+    technicalConcept: 'Marker gene profiling / MetaPhlAn4',
+    description: 'Profiles the microbial community using clade-specific marker genes.',
+    technicalDetail: 'MetaPhlAn uses a database of clade-specific marker genes to profile microbial communities at species level with high specificity. It reports relative abundances.',
+    category: 'analysis', icon: '🦠',
+    inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-profile', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Comparing MetaPhlAn profiles from different database versions — always use the same version.',
+    exampleOutput: 'A species abundance table for each sample.',
+    realToolExamples: ['MetaPhlAn4'],
+  }),
+
+  humann: B({
+    type: 'humann',
+    pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'HUMAnN Profiler',
+    technicalConcept: 'Functional profiling / HUMAnN3',
+    description: 'Identifies which metabolic pathways are active in your microbial community.',
+    technicalDetail: 'HUMAnN (HMP Unified Metabolic Analysis Network) maps reads to reference pangenomes and then to metabolic pathways, providing gene family and pathway abundance tables.',
+    category: 'analysis', icon: '⚗️',
+    inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-functions', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Running HUMAnN on amplicon (16S) data — it is designed for shotgun metagenomics.',
+    exampleOutput: 'Pathway abundance and gene family tables for each sample.',
+    realToolExamples: ['HUMAnN3'],
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: Single Cell  (Phase 2 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  cell_demux: B({
+    type: 'cell_demux',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Cell Demultiplexer',
+    technicalConcept: 'Cell barcode demultiplexing / STARsolo',
+    description: 'Separates the reads from each individual cell using unique barcodes.',
+    technicalDetail: 'Single-cell sequencing libraries contain cell barcodes — short unique sequences identifying each cell. Demultiplexing assigns reads to cells based on these barcodes.',
+    category: 'data', icon: '🧩',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-cells', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Using the wrong chemistry version — 10x Genomics v2 and v3 have different barcode lengths.',
+    exampleOutput: 'A cell-by-gene count matrix from demultiplexed barcodes.',
+    realToolExamples: ['Cell Ranger', 'STARsolo', 'kallisto|bustools'],
+  }),
+
+  cellranger: B({
+    type: 'cellranger',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Cell Ranger',
+    technicalConcept: '10x Genomics alignment and quantification',
+    description: 'Aligns single-cell reads and generates a cell-by-gene expression matrix.',
+    technicalDetail: 'Cell Ranger is the standard 10x Genomics pipeline — it aligns reads with STAR, performs cell barcode calling, and outputs a sparse count matrix in MEX or HDF5 format.',
+    category: 'analysis', icon: '🔬',
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    outputPorts: [{ id: 'out-matrix', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Not specifying the expected cell count or letting it auto-detect with low-quality data.',
+    exampleOutput: 'A sparse count matrix (barcodes × genes) and a web summary report.',
+    realToolExamples: ['Cell Ranger', 'STARsolo'],
+  }),
+
+  seurat_qc: B({
+    type: 'seurat_qc',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Seurat QC',
+    technicalConcept: 'scRNA-seq quality control / Seurat R package',
+    description: 'Filters out empty droplets, dead cells, and doublets from your single-cell dataset.',
+    technicalDetail: 'Seurat QC filters cells based on the number of detected genes, total UMI count, and mitochondrial gene percentage. Cells failing these thresholds are typically dead or debris.',
+    category: 'analysis', icon: '🧹',
+    inputPorts: [{ id: 'in-matrix', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-filtered', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Using the same QC thresholds for all datasets — thresholds should be set per experiment.',
+    exampleOutput: 'A filtered Seurat object with low-quality cells removed.',
+    realToolExamples: ['Seurat', 'scran', 'scanpy'],
+  }),
+
+  normalization: B({
+    type: 'normalization',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Normalize Counts',
+    technicalConcept: 'scRNA-seq count normalization / SCTransform',
+    description: 'Makes expression levels comparable across cells that were sequenced at different depths.',
+    technicalDetail: 'scRNA-seq data has high technical variability. Normalization (library size normalization or SCTransform) removes sequencing depth effects to allow meaningful comparison between cells.',
+    category: 'analysis', icon: '⚖️',
+    inputPorts: [{ id: 'in-filtered', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-norm', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Running clustering before normalization — results will be dominated by sequencing depth.',
+    exampleOutput: 'A normalized expression matrix with comparable counts across cells.',
+    realToolExamples: ['Seurat SCTransform', 'scran pooling'],
+  }),
+
+  dim_reduction: B({
+    type: 'dim_reduction',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Dim Reduction',
+    technicalConcept: 'PCA + UMAP / dimensionality reduction',
+    description: 'Compresses thousands of gene dimensions into 2D so you can visualize cell populations.',
+    technicalDetail: 'PCA reduces the gene expression matrix to principal components capturing variance. UMAP (Uniform Manifold Approximation and Projection) then projects cells into 2D for visualization.',
+    category: 'analysis', icon: '🗺️',
+    inputPorts: [{ id: 'in-norm', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-embedding', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Interpreting UMAP distances as biologically meaningful — UMAP is for visualization only.',
+    exampleOutput: 'PCA and UMAP embeddings for each cell.',
+    realToolExamples: ['Seurat RunPCA/RunUMAP', 'scanpy'],
+  }),
+
+  clustering: B({
+    type: 'clustering',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Cell Clustering',
+    technicalConcept: 'Graph-based clustering / Louvain or Leiden algorithm',
+    description: 'Groups cells with similar expression patterns into clusters that may represent cell types.',
+    technicalDetail: 'Seurat constructs a k-nearest-neighbour graph in PCA space and applies Louvain or Leiden community detection. The resolution parameter controls cluster granularity.',
+    category: 'analysis', icon: '🫧',
+    inputPorts: [{ id: 'in-embedding', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-clusters', label: 'QC output', dataType: 'qc_output' }],
+    commonMistake: 'Over-clustering by using too high a resolution. Start low and increase if needed.',
+    exampleOutput: 'Cluster assignments for each cell, overlaid on a UMAP plot.',
+    realToolExamples: ['Seurat FindClusters', 'scanpy leiden'],
+  }),
+
+  marker_genes: B({
+    type: 'marker_genes',
+    pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
+    displayName: 'Marker Genes',
+    technicalConcept: 'Cluster marker gene identification / FindMarkers',
+    description: 'Identifies the genes that most distinguish each cell cluster from all others.',
+    technicalDetail: 'FindMarkers tests for differential expression between one cluster and all others. Top marker genes are used to assign cell type identities based on known markers.',
+    category: 'output', icon: '🎯',
+    inputPorts: [{ id: 'in-clusters', label: 'QC output', dataType: 'qc_output' }],
+    outputPorts: [{ id: 'out-markers', label: 'Report data', dataType: 'report_data' }],
+    commonMistake: 'Assigning cell types based on a single marker gene. Multiple markers should be used.',
+    exampleOutput: 'A table of top marker genes per cluster with fold changes and p-values.',
+    realToolExamples: ['Seurat FindMarkers', 'scanpy rank_genes_groups'],
+  }),
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: nf-core Tools  (Phase 1–3 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  channel_creator: B({
+    type: 'channel_creator',
+    pack: 'nfcore_tools', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Channel Creator',
+    technicalConcept: 'Nextflow channel / fromPath, fromSamplesheet',
+    description: 'Creates a data stream that connects pipeline steps — the core of Nextflow\'s data model.',
+    technicalDetail: 'Nextflow channels carry data between processes asynchronously. Channel factories like Channel.fromPath and Channel.fromSamplesheet create channels from files or CSV input.',
+    category: 'pipeline', icon: '🌊',
+    inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    commonMistake: 'Consuming a channel more than once — Nextflow channels are consumed on read.',
+    exampleOutput: 'A Nextflow channel emitting file tuples to downstream processes.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
+    realToolExamples: ['Nextflow DSL2'],
+  }),
+
+  subworkflow_block: B({
+    type: 'subworkflow_block',
+    pack: 'nfcore_tools', status: 'phase1', executionMode: 'coming_soon',
+    displayName: 'Subworkflow',
+    technicalConcept: 'nf-core subworkflow / reusable workflow group',
+    description: 'Groups multiple steps into a reusable unit that can be shared across pipelines.',
+    technicalDetail: 'nf-core subworkflows are modular groups of processes that implement a complete analytical sub-task (e.g. BAM_SORT_STATS_SAMTOOLS). They can be imported into any pipeline.',
+    category: 'pipeline', icon: '📦',
+    inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
+    commonMistake: 'Creating a subworkflow for a single process. Subworkflows are for groups of related steps.',
+    exampleOutput: 'A reusable subworkflow block callable from multiple pipelines.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
+    realToolExamples: ['nf-core/modules'],
+  }),
+
+  module_creator: B({
+    type: 'module_creator',
+    pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
+    displayName: 'Module Creator',
+    technicalConcept: 'nf-core module / bioinformatics tool wrapper',
+    description: 'Wraps a bioinformatics tool into a standardised reusable module for the nf-core community.',
+    technicalDetail: 'nf-core modules are Nextflow DSL2 process definitions that wrap individual bioinformatics tools with consistent input/output conventions, containers, and test data.',
+    category: 'pipeline', icon: '🔨',
+    inputPorts: [],
+    outputPorts: [],
+    commonMistake: 'Writing a module without a corresponding test file. All nf-core modules must have tests.',
+    exampleOutput: 'A module directory with main.nf, meta.yml, and tests/.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
+    realToolExamples: ['nf-core/modules'],
+  }),
+
+  pipeline_linter: B({
+    type: 'pipeline_linter',
+    pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
+    displayName: 'Pipeline Linter',
+    technicalConcept: 'nf-core lint / pipeline structure validation',
+    description: 'Checks your pipeline follows nf-core standards and best practices.',
+    technicalDetail: 'nf-core lint checks pipeline structure, file naming, nextflow_schema.json correctness, CHANGELOG format, and dozens of other requirements for contributing to nf-core.',
+    category: 'analysis', icon: '✅',
+    inputPorts: [],
+    outputPorts: [],
+    commonMistake: 'Running lint only at the end. Run it early to catch structural issues before they accumulate.',
+    exampleOutput: 'A lint report listing passed, warned, and failed checks.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/pipelines/overview',
+    realToolExamples: ['nf-core tools lint'],
+  }),
+
+  test_data_fetcher: B({
+    type: 'test_data_fetcher',
+    pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
+    displayName: 'Test Data Fetcher',
+    technicalConcept: 'nf-core test datasets / nf-core/test-datasets',
+    description: 'Downloads tiny curated test datasets used to verify pipeline steps work correctly.',
+    technicalDetail: 'nf-core maintains a repository of tiny test datasets (a few MB each) that allow modules and pipelines to be tested quickly and reproducibly in CI environments.',
+    category: 'data', icon: '📦',
+    inputPorts: [],
+    outputPorts: [{ id: 'out-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
+    commonMistake: 'Using real patient data for testing instead of the provided test datasets.',
+    exampleOutput: 'Small FASTQ, BAM, or VCF files from the nf-core/test-datasets repository.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/nf-core-tools/cli/test-datasets/list',
+    realToolExamples: ['nf-core/test-datasets'],
+  }),
 }
 
-export const ALL_BLOCK_TYPES: BlockType[] = Object.keys(BLOCK_DEFINITIONS) as BlockType[]
+export const ALL_BLOCK_TYPES = Object.keys(BLOCK_DEFINITIONS) as BlockType[]
+
+export const AVAILABLE_BLOCK_TYPES = ALL_BLOCK_TYPES.filter(
+  t => BLOCK_DEFINITIONS[t].status === 'available'
+)

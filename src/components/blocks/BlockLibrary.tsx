@@ -2,64 +2,92 @@
 
 import { useCallback } from 'react'
 import { BlockCard } from './BlockCard'
-import { BLOCK_DEFINITIONS, ALL_BLOCK_TYPES } from '@/lib/blocks/definitions'
+import { PACKS, ALL_BLOCK_TYPES, BLOCK_DEFINITIONS } from '@/lib/blocks/definitions'
 import type { BlockType } from '@/types'
 
 interface BlockLibraryProps {
   onAddToCanvas: (blockType: BlockType, position?: { x: number; y: number }) => void
 }
 
-const CATEGORY_ORDER = ['pipeline', 'data', 'analysis', 'output'] as const
-const CATEGORY_LABELS: Record<string, string> = {
-  pipeline: 'Pipeline',
-  data:     'Data',
-  analysis: 'Analysis',
-  output:   'Output',
+const PHASE_LABELS: Record<number, string> = {
+  0: 'Available now',
+  1: 'Phase 1',
+  2: 'Phase 2',
+  3: 'Phase 3',
+}
+
+const PHASE_BADGE_COLORS: Record<number, string> = {
+  0: 'oklch(52% 0.22 152)',
+  1: 'oklch(58% 0.20 212)',
+  2: 'oklch(52% 0.20 232)',
+  3: 'oklch(52% 0.18 85)',
 }
 
 export function BlockLibrary({ onAddToCanvas }: BlockLibraryProps) {
   const handleAdd = useCallback(
     (blockType: BlockType) => {
-      onAddToCanvas(blockType, { x: 200 + Math.random() * 200, y: 150 + Math.random() * 100 })
+      onAddToCanvas(blockType, { x: 180 + Math.random() * 160, y: 140 + Math.random() * 80 })
     },
     [onAddToCanvas]
   )
 
-  const grouped = CATEGORY_ORDER.map(cat => ({
-    category: cat,
-    label: CATEGORY_LABELS[cat],
-    blocks: ALL_BLOCK_TYPES.filter(t => BLOCK_DEFINITIONS[t].category === cat),
-  })).filter(g => g.blocks.length > 0)
-
   return (
     <aside
       aria-label="Block library"
-      className="flex flex-col w-52 shrink-0 bg-surface-2 border-r border-border overflow-y-auto"
+      className="flex flex-col w-56 shrink-0 bg-surface-2 border-r border-border overflow-y-auto"
     >
-      <div className="px-3 pt-4 pb-2">
-        <h2 className="text-xs font-semibold text-fg-muted uppercase tracking-wide">
-          Blocks
+      <div className="px-3 pt-4 pb-2 shrink-0">
+        <h2 className="text-xs font-bold text-fg-muted uppercase tracking-wider">
+          Block Library
         </h2>
+        <p className="text-xs text-fg-muted mt-0.5">
+          {ALL_BLOCK_TYPES.length} blocks · {PACKS.length} packs
+        </p>
       </div>
-      <div className="flex flex-col gap-4 px-1 pb-4">
-        {grouped.map(group => (
-          <div key={group.category}>
-            <div className="px-2 pb-1">
-              <span className="text-xs font-semibold text-fg-muted uppercase tracking-wide">
-                {group.label}
-              </span>
+
+      <div className="flex flex-col pb-4">
+        {PACKS.map(pack => {
+          const packBlocks = ALL_BLOCK_TYPES.filter(t => BLOCK_DEFINITIONS[t].pack === pack.id)
+          if (packBlocks.length === 0) return null
+
+          return (
+            <div key={pack.id}>
+              {/* Pack header */}
+              <div
+                className="flex items-center gap-2 px-3 py-2 border-t border-border"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                <span className="text-sm">{pack.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-fg-primary truncate">{pack.name}</span>
+                    <span
+                      className="shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded"
+                      style={{
+                        background: PHASE_BADGE_COLORS[pack.phase] + '22',
+                        color: PHASE_BADGE_COLORS[pack.phase],
+                        fontSize: 10,
+                      }}
+                    >
+                      {PHASE_LABELS[pack.phase]}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Blocks */}
+              <div className="flex flex-col">
+                {packBlocks.map(blockType => (
+                  <BlockCard
+                    key={blockType}
+                    blockType={blockType}
+                    onAddToCanvas={handleAdd}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex flex-col">
-              {group.blocks.map(blockType => (
-                <BlockCard
-                  key={blockType}
-                  blockType={blockType}
-                  onAddToCanvas={handleAdd}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </aside>
   )

@@ -43,7 +43,7 @@ type HandlerResult = {
 
 type BlockHandler = (context: RunContext, block: IRBlock) => HandlerResult
 
-const handlers: Record<BlockType, BlockHandler> = {
+const handlers: Partial<Record<BlockType, BlockHandler>> = {
   start_pipeline: (ctx, _block) => ({
     context: ctx,
     message: 'Pipeline started.',
@@ -112,6 +112,38 @@ const handlers: Record<BlockType, BlockHandler> = {
     status: 'success',
     details: 'Final QC report and processed files are ready for download.',
   }),
+
+  // ─ FASTQ Basics handlers ─
+  run_profile: (ctx, _block) => ({
+    context: ctx,
+    message: 'Run profile configured. Docker/Singularity environment selected.',
+    status: 'success',
+    details: 'The -profile flag will be added to the generated nextflow run command.',
+  }),
+  parameter_setting: (ctx, _block) => ({
+    context: ctx,
+    message: 'Pipeline parameter applied.',
+    status: 'success',
+    details: 'This parameter will appear in the generated nextflow run command.',
+  }),
+  paired_validator: (ctx, _block) => ({
+    context: { ...ctx, fastqLoaded: true },
+    message: `Paired-end validation passed for ${ctx.samples.length} sample${ctx.samples.length !== 1 ? 's' : ''}.`,
+    status: 'success',
+    details: 'All samples have matching R1 and R2 files.',
+  }),
+  adapter_detector: (ctx, _block) => ({
+    context: ctx,
+    message: 'Adapter detection complete. Common Illumina adapters detected.',
+    status: 'warning',
+    details: 'TruSeq adapters found in SAMPLE1. Run Trim Reads to remove them before alignment.',
+  }),
+  read_length_checker: (ctx, _block) => ({
+    context: ctx,
+    message: 'Read length check passed. All reads are 150 bp.',
+    status: 'success',
+    details: 'Consistent read lengths across all samples. No trimming artefacts detected.',
+  }),
 }
 
 // ─── Report card builder ─────────────────────────────────────────────────────
@@ -171,7 +203,11 @@ export function simulate(ir: WorkflowIR): SimulationResult {
     const block = ir.blocks.find(b => b.id === blockId)
     if (!block) continue
 
-    const handler = handlers[block.type]
+    const handler = handlers[block.type] ?? ((ctx: RunContext): HandlerResult => ({
+      context: ctx,
+      message: `${block.type.replace(/_/g, ' ')} — coming in a future pack.`,
+      status: 'warning',
+    }))
     if (!handler) continue
 
     const result = handler(ctx, block)

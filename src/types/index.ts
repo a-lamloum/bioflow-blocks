@@ -2,7 +2,20 @@ import type { Node, Edge } from '@xyflow/react'
 
 // ─── Block and Port Types ────────────────────────────────────────────────────
 
+export type PackId =
+  | 'rnaseq_qc'
+  | 'rnaseq_full'
+  | 'variant_calling'
+  | 'metagenomics'
+  | 'single_cell'
+  | 'fastq_basics'
+  | 'nfcore_tools'
+
+export type BlockStatus = 'available' | 'phase1' | 'phase2' | 'phase3'
+export type ExecutionMode = 'simulated' | 'mock' | 'command_generation' | 'coming_soon'
+
 export type BlockType =
+  // ─ RNA-seq QC (Phase 0) ─
   | 'start_pipeline'
   | 'samplesheet'
   | 'input_fastq'
@@ -10,6 +23,51 @@ export type BlockType =
   | 'trim_reads'
   | 'generate_report'
   | 'output_results'
+  | 'run_profile'
+  | 'parameter_setting'
+  // ─ FASTQ Basics (Phase 0 stretch) ─
+  | 'paired_validator'
+  | 'adapter_detector'
+  | 'read_length_checker'
+  // ─ RNA-seq Full Pipeline (Phase 1) ─
+  | 'genome_index'
+  | 'read_aligner'
+  | 'bam_sorter'
+  | 'bam_indexer'
+  | 'feature_counter'
+  | 'deseq2'
+  | 'volcano_plot'
+  | 'pathway_analysis'
+  // ─ Variant Calling (Phase 2) ─
+  | 'reference_genome'
+  | 'bwa_aligner'
+  | 'mark_duplicates'
+  | 'base_recalibrator'
+  | 'variant_caller'
+  | 'genotype_gvcf'
+  | 'variant_filter'
+  | 'vcf_annotator'
+  // ─ Metagenomics (Phase 2) ─
+  | 'host_removal'
+  | 'kraken2'
+  | 'bracken'
+  | 'krona_viz'
+  | 'metaphlan'
+  | 'humann'
+  // ─ Single Cell (Phase 2) ─
+  | 'cell_demux'
+  | 'cellranger'
+  | 'seurat_qc'
+  | 'normalization'
+  | 'dim_reduction'
+  | 'clustering'
+  | 'marker_genes'
+  // ─ nf-core Tools (Phase 1–3) ─
+  | 'channel_creator'
+  | 'subworkflow_block'
+  | 'module_creator'
+  | 'pipeline_linter'
+  | 'test_data_fetcher'
 
 export type DataType =
   | 'pipeline_context'
@@ -39,6 +97,11 @@ export interface BlockDefinition {
   commonMistake: string
   exampleOutput: string
   nfCoreDocsLink?: string
+  // Pack metadata
+  pack: PackId
+  status: BlockStatus
+  executionMode: ExecutionMode
+  realToolExamples?: string[]
 }
 
 // ─── Canvas Node / Edge ──────────────────────────────────────────────────────
