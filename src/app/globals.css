@@ -1,0 +1,265 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DESIGN TOKENS
+   Source of truth: DESIGN.md
+   All values are CSS custom properties so Tailwind utilities
+   and arbitrary values can reference them consistently.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* --- Canvas & surfaces --- */
+  --color-canvas:        oklch(96% 0.010 85);
+  --color-surface:       oklch(99% 0.005 85);
+  --color-surface-2:     oklch(93% 0.012 85);
+  --color-border:        oklch(88% 0.015 85);
+  --color-border-strong: oklch(78% 0.020 85);
+
+  /* --- Text --- */
+  --color-text-primary:   oklch(24% 0.018 260);
+  --color-text-secondary: oklch(52% 0.020 260);
+  --color-text-muted:     oklch(68% 0.015 260);
+
+  /* --- Brand teal --- */
+  --color-teal-50:  oklch(95% 0.030 195);
+  --color-teal-100: oklch(90% 0.055 195);
+  --color-teal-400: oklch(72% 0.130 195);
+  --color-teal-500: oklch(60% 0.145 195);
+  --color-teal-600: oklch(50% 0.140 195);
+  --color-teal-700: oklch(40% 0.120 195);
+
+  /* --- Status --- */
+  --color-success: oklch(58% 0.160 150);
+  --color-warning: oklch(68% 0.150  75);
+  --color-error:   oklch(55% 0.170  20);
+  --color-info:    oklch(60% 0.130 250);
+
+  /* --- Block category fills (≤50% lightness → white text ≥4.5:1) --- */
+  --block-start:    oklch(48% 0.130 145);
+  --block-data:     oklch(46% 0.140 250);
+  --block-analysis: oklch(44% 0.150 270);
+  --block-process:  oklch(50% 0.130  75);
+  --block-report:   oklch(46% 0.145 195);
+  --block-output:   oklch(46% 0.140 155);
+  --block-text:     oklch(99% 0.005 85);
+
+  /* --- Mission / gamification --- */
+  --color-mission-active:   oklch(68% 0.140 195);
+  --color-mission-complete: oklch(62% 0.155 150);
+  --color-mission-locked:   oklch(75% 0.015 260);
+
+  /* --- Focus ring --- */
+  --color-focus-ring: oklch(60% 0.145 195);
+
+  /* --- Spacing --- */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-12: 3rem;
+
+  /* --- Radii --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* --- Typography --- */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+
+  --leading-xs:   1.4;
+  --leading-sm:   1.5;
+  --leading-base: 1.6;
+  --leading-xl:   1.4;
+  --leading-2xl:  1.3;
+
+  --weight-normal:   400;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* --- Breakpoints (reference only — use Tailwind breakpoint utilities in markup) --- */
+  --bp-tablet:  768px;
+  --bp-desktop: 1280px;
+
+  /* --- Transitions --- */
+  --duration-fast:   180ms;
+  --duration-normal: 200ms;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================
+   RESET & NORMALIZE
+   Minimal opinionated reset on top of Tailwind's Preflight.
+   Preflight already handles: box-sizing, margin/padding zeroing,
+   border-box inheritance, and most element normalization.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: var(--leading-base);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  min-height: 100dvh;
+}
+
+/* ============================================================
+   FOCUS RING
+   Consistent, brand-colored, keyboard-only focus indicator.
+   Using :focus-visible so mouse clicks don't show the ring.
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove default outline — we provide our own via :focus-visible */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+   TYPOGRAPHY BASELINE
+   Applied to prose regions only (inspector explanation,
+   mission steps). Canvas and panel labels use utility classes.
+   ============================================================ */
+
+.prose {
+  max-width: 65ch;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-text-primary);
+}
+
+.prose p + p {
+  margin-top: var(--space-3);
+}
+
+/* ============================================================
+   MONOSPACE BASELINE
+   Used only for the JSON preview panel.
+   ============================================================ */
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+pre {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   Blanket disable for all animation and transitions.
+   Every motion-sensitive component should also use
+   the Tailwind `motion-safe:` prefix on its utility classes.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   REACT FLOW OVERRIDES
+   Scope all overrides under .react-flow to avoid bleed.
+   ============================================================ */
+
+.react-flow {
+  background-color: var(--color-canvas);
+}
+
+/* Hide default React Flow attribution (replace with our own disclaimer) */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Edge / connection line color */
+.react-flow__edge-path,
+.react-flow__connection-path {
+  stroke: var(--color-border-strong);
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--color-teal-500);
+}
+
+/* Mini-map (if used in a later phase) */
+.react-flow__minimap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   SCROLLBAR NORMALIZATION
+   Thin, brand-tinted scrollbar on webkit. Firefox uses thin.
+   ============================================================ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-muted);
+}
