@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { PACKS, BLOCK_DEFINITIONS, ALL_BLOCK_TYPES } from '@/lib/blocks/definitions'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 // ─── Floating hero block ───────────────────────────────────────────────────────
 
@@ -117,6 +118,7 @@ export default function LandingPage() {
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
             GitHub
           </a>
+          <ThemeToggle variant="dark-surface" />
           <Link href="/builder"
             className="text-sm font-bold px-5 py-2 rounded-lg animate-pulse-glow"
             style={{ background: 'var(--color-teal-500)', color: 'white', boxShadow: '0 3px 0 var(--color-teal-700)' }}>

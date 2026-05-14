@@ -8,6 +8,7 @@ import { MissionPanel } from '@/components/mission/MissionPanel'
 import { RunPanel } from '@/components/run/RunPanel'
 import { ToastContainer } from '@/components/ui/Toast'
 import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
@@ -175,6 +176,18 @@ export default function BuilderPage() {
     <main className="flex flex-col h-screen overflow-hidden bg-canvas">
       <TutorialWizard />
       <ToastContainer toasts={toasts} onDismiss={dismissToast} durationMs={5000} />
+
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border bg-surface-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-fg-primary">BioFlow Blocks</span>
+          <span className="text-xs text-fg-muted">— nf-core visual simulator</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <ThemeToggle variant="light-surface" />
+        </div>
+      </header>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Block library */}
         <BlockLibrary onAddToCanvas={handleAddToCanvas} />
