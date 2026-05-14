@@ -13,6 +13,7 @@ import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { CompletionBadge } from '@/components/mission/CompletionBadge'
 import { ProjectsPanel } from '@/components/projects/ProjectsPanel'
+import { AuthButton } from '@/components/auth/AuthButton'
 import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
@@ -272,6 +273,7 @@ export default function BuilderPage() {
             📂 Projects
           </button>
           <ThemeToggle variant="light-surface" />
+          <AuthButton variant="light-surface" />
         </div>
       </nav>
 

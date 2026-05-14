@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import {
-  listProjects,
-  saveProject,
-  loadProject,
-  deleteProject,
-  duplicateProject,
-  type SavedProject,
-} from '@/lib/projects/projects'
+  listProjectsDb,
+  saveProjectDb,
+  deleteProjectDb,
+  duplicateProjectDb,
+  getCurrentUser,
+} from '@/lib/supabase/database'
+import { loadProject, type SavedProject } from '@/lib/projects/projects'
 import type { PipelineNode, PipelineEdge, Mission } from '@/types'
 
 interface ProjectsPanelProps {
@@ -34,16 +34,22 @@ export function ProjectsPanel({
 }: ProjectsPanelProps) {
   const [projects, setProjects] = useState<SavedProject[]>([])
   const [saveName, setSaveName] = useState('')
-  const [saving, setSaving] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  const refresh = useCallback(() => setProjects(listProjects()), [])
+  const refresh = useCallback(async () => {
+    const list = await listProjectsDb()
+    setProjects(list)
+  }, [])
 
-  useEffect(() => { refresh() }, [refresh])
+  useEffect(() => {
+    refresh()
+    getCurrentUser().then(u => setIsLoggedIn(!!u))
+  }, [refresh])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!saveName.trim() && currentNodes.length === 0) return
-    const project = saveProject(
+    const project = await saveProjectDb(
       saveName || 'My Pipeline',
       activeMission.id,
       currentNodes,
@@ -56,7 +62,7 @@ export function ProjectsPanel({
   }
 
   const handleLoad = (id: string) => {
-    const p = loadProject(id)
+    const p = loadProject(id) ?? projects.find(pr => pr.id === id)
     if (!p) return
     onLoad(p.nodes, p.edges)
     setSavedId(id)
@@ -64,14 +70,14 @@ export function ProjectsPanel({
     onClose()
   }
 
-  const handleDelete = (id: string) => {
-    deleteProject(id)
+  const handleDelete = async (id: string) => {
+    await deleteProjectDb(id)
     if (savedId === id) { setSavedId(null); setSaveName('') }
     refresh()
   }
 
-  const handleDuplicate = (id: string) => {
-    duplicateProject(id)
+  const handleDuplicate = async (id: string) => {
+    await duplicateProjectDb(id)
     refresh()
   }
 
@@ -184,7 +190,13 @@ export function ProjectsPanel({
         </div>
 
         <div className="px-5 py-3 border-t border-border shrink-0">
-          <p className="text-xs text-fg-muted">Projects are saved locally in your browser.</p>
+          {isLoggedIn
+            ? <p className="text-xs text-fg-muted">Projects synced to your account.</p>
+            : <p className="text-xs text-fg-muted">
+                Projects saved locally.{' '}
+                <span className="text-teal-500">Sign in</span> to sync across devices.
+              </p>
+          }
         </div>
       </aside>
     </>

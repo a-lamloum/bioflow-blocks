@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { PACKS, BLOCK_DEFINITIONS, ALL_BLOCK_TYPES } from '@/lib/blocks/definitions'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { AuthButton } from '@/components/auth/AuthButton'
 
 // ─── Floating hero block ───────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ export default function LandingPage() {
             Modules
           </Link>
           <ThemeToggle variant="dark-surface" />
+          <AuthButton variant="dark-surface" />
           <Link href="/builder"
             className="text-sm font-bold px-5 py-2 rounded-lg animate-pulse-glow"
             style={{ background: 'var(--color-teal-500)', color: 'white', boxShadow: '0 3px 0 var(--color-teal-700)' }}>

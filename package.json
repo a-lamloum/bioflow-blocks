@@ -13,6 +13,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "@types/uuid": "^10.0.0",
     "@xyflow/react": "^12.10.2",
     "next": "16.2.6",
@@ -32,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "jsdom": "^27.0.1",
+    "pg": "^8.20.0",
     "tailwindcss": "^4",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

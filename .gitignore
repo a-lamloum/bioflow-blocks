@@ -6,9 +6,11 @@ node_modules/
 out/
 build/
 
-# Environment
+# Environment — NEVER commit these
 .env
 .env.*
+.env.local
+.env.*.local
 !.env.example
 
 # Logs
