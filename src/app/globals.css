@@ -170,6 +170,61 @@ pre {
   to   { opacity: 1; transform: translateX(0); }
 }
 
+/* Landing page animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-18px); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(60% 0.145 195 / 0); }
+  50%       { box-shadow: 0 0 32px 8px oklch(60% 0.145 195 / 0.35); }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes connector-flow {
+  0%   { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.animate-float       { animation: float 6s ease-in-out infinite; }
+.animate-float-slow  { animation: float-slow 8s ease-in-out infinite; }
+.animate-fade-up     { animation: fade-up 0.6s var(--ease-out-quint, ease-out) both; }
+.animate-fade-in-scale { animation: fade-in-scale 0.5s var(--ease-out-quart, ease-out) both; }
+.animate-pulse-glow  { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+/* Scroll-reveal: add .revealed class via IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s var(--ease-out-quint, ease-out),
+              transform 0.6s var(--ease-out-quint, ease-out);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .animate-fade-in {
   animation: fade-in var(--duration-normal, 200ms) var(--ease-out-quint, ease-out) both;
 }
