@@ -156,6 +156,38 @@ export const PipelineNode = memo(function PipelineNode({
           strokeLinecap="round"
           fill="none"
         />
+
+        {/* ── Port indicator circles — visible drag handles ── */}
+        {/* Input port(s): white circle with colored ring at the notch opening */}
+        {def.inputPorts.map((port, i) => {
+          const cy = H / 2 + (def.inputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0)
+          return (
+            <g key={port.id}>
+              {/* Outer glow ring */}
+              <circle cx={0} cy={cy} r={11} fill={palette.fill} opacity={0.25} />
+              {/* Main circle */}
+              <circle cx={0} cy={cy} r={8} fill="white" stroke={palette.fill} strokeWidth={3} />
+              {/* Inner dot */}
+              <circle cx={0} cy={cy} r={3} fill={palette.fill} />
+            </g>
+          )
+        })}
+
+        {/* Output port(s): white circle with colored ring at the bump tip */}
+        {def.outputPorts.map((port, i) => {
+          const cy = H / 2 + (def.outputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0)
+          const cx = W + TR  // tip of the right bump
+          return (
+            <g key={port.id}>
+              {/* Outer glow ring */}
+              <circle cx={cx} cy={cy} r={11} fill={palette.fill} opacity={0.25} />
+              {/* Main circle */}
+              <circle cx={cx} cy={cy} r={8} fill="white" stroke={palette.fill} strokeWidth={3} />
+              {/* Inner dot */}
+              <circle cx={cx} cy={cy} r={3} fill={palette.fill} />
+            </g>
+          )
+        })}
       </svg>
 
       {/* ── Delete button ── */}
@@ -243,13 +275,13 @@ export const PipelineNode = memo(function PipelineNode({
           position={Position.Left}
           id={port.id}
           style={{
-            left: -1,
+            left: -12,     // aligned to circle center at x=0 in SVG
             top: H / 2 + (def.inputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0),
-            width: 20,
+            width: 24,     // generous hit area matching the circle
             height: 24,
             background: 'transparent',
             border: 'none',
-            borderRadius: 0,
+            borderRadius: '50%',
             transform: 'translateY(-50%)',
             cursor: 'crosshair',
           }}
@@ -263,15 +295,15 @@ export const PipelineNode = memo(function PipelineNode({
           position={Position.Right}
           id={port.id}
           style={{
-            right: -TR,
+            right: -TR - 2,  // aligned to circle center at x=W+TR in SVG
             top: H / 2 + (def.outputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0),
-            width: 20,
+            width: 24,
             height: 24,
             background: 'transparent',
             border: 'none',
-            borderRadius: 0,
+            borderRadius: '50%',
             transform: 'translateY(-50%)',
-            cursor: 'crosshair',
+            cursor: 'grab',
           }}
         />
       ))}

@@ -203,19 +203,52 @@ export default function BuilderPage() {
         />
       )}
 
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border bg-surface-2">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="text-sm font-bold text-fg-primary">BioFlow Blocks</Link>
-          <span className="text-fg-muted text-xs">—</span>
-          <Link href="/missions" className="text-xs font-semibold text-fg-secondary hover:text-teal-500 transition-colors">
+      {/* ── Navbar ── */}
+      <nav className="flex items-center justify-between px-5 h-12 shrink-0 border-b border-border bg-surface z-30">
+        {/* Left: brand + links */}
+        <div className="flex items-center gap-1">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-surface-2 transition-colors"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/bioflow-logo.svg" alt="" width={22} height={22} />
+            <span className="text-sm font-bold text-fg-primary">BioFlow Blocks</span>
+          </Link>
+
+          <span className="text-border-strong text-xs mx-1">/</span>
+
+          <Link
+            href="/missions"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors"
+          >
             Missions
           </Link>
+
+          {/* Active mission chip */}
+          <div
+            className="hidden tablet:flex items-center gap-1.5 ml-2 px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
+          >
+            <span>🎯</span>
+            <span className="truncate max-w-40">{activeMission.title}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
+
+        {/* Right: controls */}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/builder"
+            onClick={() => {
+              // Clear canvas hint
+            }}
+            className="hidden tablet:flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-muted hover:text-fg-secondary hover:bg-surface-2 transition-colors"
+          >
+            New pipeline
+          </Link>
           <ThemeToggle variant="light-surface" />
         </div>
-      </header>
+      </nav>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Block library */}
