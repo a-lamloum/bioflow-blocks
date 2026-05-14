@@ -126,12 +126,16 @@ reflect the connected blocks on canvas.
 - **FR-004**: The learner MUST be able to connect compatible blocks by drawing edges between
   them on the canvas.
 - **FR-005**: The system MUST prevent connections between incompatible block output/input types
-  and explain the incompatibility in beginner language.
+  and display a one-line beginner-friendly explanation in the run panel area when a connection
+  is rejected (e.g. "QC Step can't connect directly to Output Results — add a Generate Report
+  block first"). The message MUST auto-dismiss after 3 seconds.
 - **FR-006**: Clicking any block MUST open a right-side inspector panel with: beginner name,
   plain-language explanation, real nf-core/Nextflow concept, required inputs, produced outputs,
   and a common mistake.
-- **FR-007**: The inspector MUST include a toggleable "Technical detail" section that reveals
-  the official nf-core term without replacing the beginner explanation.
+- **FR-007**: The inspector MUST show the official nf-core concept as a permanently visible,
+  visually subdued line directly below the block name (format: `nf-core concept: [term]`,
+  text-sm muted weight). No toggle is required — both the beginner explanation and the
+  technical concept are always present, differentiated by visual weight rather than interaction.
 - **FR-008**: The prototype MUST include exactly one guided mission: "Build Your First QC
   Pipeline", which provides a step-by-step prompt guiding the learner to connect all 6 required
   blocks in a valid order.
