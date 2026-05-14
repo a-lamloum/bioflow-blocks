@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { applyTheme } from '@/lib/theme'
 
 const STORAGE_KEY = 'bioflow_theme'
 
@@ -41,19 +42,18 @@ export function ThemeToggle({ variant = 'light-surface' }: ThemeToggleProps) {
 
   useEffect(() => {
     setMounted(true)
-    setDark(document.documentElement.classList.contains('dark'))
+    const isDark = document.documentElement.classList.contains('dark')
+    setDark(isDark)
+    // Re-apply inline vars in case the CSS class was set by the anti-FOUC
+    // script but the inline vars haven't been written yet.
+    applyTheme(isDark)
   }, [])
 
   const toggle = () => {
     const next = !dark
     setDark(next)
-    if (next) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem(STORAGE_KEY, 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem(STORAGE_KEY, 'light')
-    }
+    applyTheme(next)
+    localStorage.setItem(STORAGE_KEY, next ? 'dark' : 'light')
   }
 
   // Render a placeholder with the same dimensions during SSR/hydration

@@ -39,7 +39,35 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('bioflow_theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+            __html: `(function(){
+  try {
+    var t = localStorage.getItem('bioflow_theme');
+    var dark = t === 'dark' || (t === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) {
+      var el = document.documentElement;
+      el.classList.add('dark');
+      el.style.colorScheme = 'dark';
+      var v = {
+        '--color-canvas':        'oklch(16% 0.018 220)',
+        '--color-surface':       'oklch(20% 0.020 220)',
+        '--color-surface-2':     'oklch(25% 0.022 220)',
+        '--color-border':        'oklch(33% 0.022 220)',
+        '--color-border-strong': 'oklch(43% 0.025 220)',
+        '--color-fg-primary':    'oklch(94% 0.010 200)',
+        '--color-fg-secondary':  'oklch(72% 0.018 200)',
+        '--color-fg-muted':      'oklch(52% 0.016 200)',
+        '--color-teal-50':       'oklch(20% 0.040 195)',
+        '--color-teal-100':      'oklch(28% 0.060 195)',
+        '--color-teal-400':      'oklch(75% 0.145 195)',
+        '--color-teal-500':      'oklch(66% 0.155 195)',
+        '--color-teal-600':      'oklch(55% 0.148 195)',
+        '--color-teal-700':      'oklch(44% 0.128 195)',
+        '--color-focus-ring':    'oklch(66% 0.155 195)'
+      };
+      Object.keys(v).forEach(function(k){ el.style.setProperty(k, v[k]); });
+    }
+  } catch(e) {}
+})()`,
           }}
         />
       </head>
