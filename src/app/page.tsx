@@ -302,7 +302,7 @@ export default function LandingPage() {
         </div>
         <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-4 gap-5">
           {[
-            { icon: '🎓', title: 'MSc students', desc: 'Understand pipeline concepts before your first lab practical.' },
+            { icon: '🎓', title: 'Students', desc: 'Understand pipeline concepts before your first lab practical.' },
             { icon: '🧫', title: 'Wet-lab researchers', desc: 'See what happens to your sequencing files without writing code.' },
             { icon: '👩‍🏫', title: 'Workshop instructors', desc: 'Teach nf-core concepts interactively in 60–90 minutes.' },
             { icon: '👨‍💻', title: 'Junior bioinformaticians', desc: 'Map tools and steps to the nf-core module system.' },

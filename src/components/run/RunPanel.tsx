@@ -10,6 +10,7 @@ interface RunPanelProps {
   simulationResult: SimulationResult | null
   validationResult: ValidationResult | null
   currentIR: WorkflowIR | null
+  demoResult?: SimulationResult | null
   onSimulate: () => void
 }
 
@@ -17,12 +18,17 @@ export function RunPanel({
   simulationResult,
   validationResult,
   currentIR,
+  demoResult,
   onSimulate,
 }: RunPanelProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
   const [showJson, setShowJson] = useState(false)
 
   const hasErrors = validationResult && !validationResult.valid && validationResult.errors.length > 0
+
+  // Show demo when no real simulation has run yet
+  const displayResult = simulationResult ?? (demoResult ?? null)
+  const isDemo = !simulationResult && !!demoResult
 
   return (
     <section
@@ -45,8 +51,8 @@ export function RunPanel({
         </button>
       </div>
 
-      {/* Idle state — no simulation yet */}
-      {!simulationResult && !hasErrors && (
+      {/* Idle state — no simulation and no demo */}
+      {!displayResult && !hasErrors && (
         <div className="flex flex-col items-center justify-center flex-1 gap-3 p-4">
           <Button onClick={onSimulate} variant="primary" className="min-w-32">
             ▶ Simulate
@@ -76,22 +82,40 @@ export function RunPanel({
         </div>
       )}
 
-      {/* Active state — simulation result */}
-      {simulationResult && (
+      {/* Result — real or demo */}
+      {displayResult && !hasErrors && (
         <div className="flex flex-col overflow-y-auto flex-1">
-          {simulationResult.reportCard && (
-            <ReportCard report={simulationResult.reportCard} />
+          {/* Demo banner */}
+          {isDemo && (
+            <div
+              className="flex items-center justify-between px-4 py-2 shrink-0"
+              style={{ background: 'var(--color-teal-50)', borderBottom: '1px solid var(--color-teal-100)' }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm">👀</span>
+                <p className="text-xs font-semibold" style={{ color: 'var(--color-teal-700)' }}>
+                  Demo preview — this is what a completed run looks like
+                </p>
+              </div>
+              <Button onClick={onSimulate} variant="primary" className="text-xs h-7 px-3">
+                ▶ Run yours
+              </Button>
+            </div>
           )}
 
-          <TraceList entries={simulationResult.trace} />
+          {displayResult.reportCard && (
+            <ReportCard report={displayResult.reportCard} />
+          )}
 
-          {simulationResult.generatedCommand && (
+          <TraceList entries={displayResult.trace} />
+
+          {displayResult.generatedCommand && (
             <div className="px-4 py-3 border-t border-border bg-surface-2">
               <p className="text-xs text-fg-muted mb-1">
                 Illustrative command (educational only — not executed):
               </p>
               <code className="text-xs font-mono text-fg-secondary break-all">
-                {simulationResult.generatedCommand}
+                {displayResult.generatedCommand}
               </code>
             </div>
           )}
@@ -116,11 +140,13 @@ export function RunPanel({
             )}
           </div>
 
+          {!isDemo && (
           <div className="px-4 py-2 border-t border-border flex justify-end">
             <Button onClick={onSimulate} variant="secondary" className="text-xs h-8">
               ▶ Run again
             </Button>
           </div>
+          )}
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { BlockInspector } from '@/components/inspector/BlockInspector'
 import { MissionPanel } from '@/components/mission/MissionPanel'
 import { RunPanel } from '@/components/run/RunPanel'
 import { ToastContainer } from '@/components/ui/Toast'
+import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
 import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
@@ -49,6 +50,29 @@ const INITIAL_MISSION: MissionState = {
   completed: false,
 }
 
+// Pre-built demo IR — shown on first load so learners see a completed run immediately
+const DEMO_IR: WorkflowIR = {
+  schema_version: '0.1',
+  project_id: 'demo',
+  name: 'Demo QC Pipeline',
+  execution_mode: 'simulated',
+  blocks: [
+    { id: 'd1', type: 'start_pipeline',  config: {} },
+    { id: 'd2', type: 'samplesheet',     config: {} },
+    { id: 'd3', type: 'input_fastq',     config: {} },
+    { id: 'd4', type: 'qc_step',         config: {} },
+    { id: 'd5', type: 'generate_report', config: {} },
+    { id: 'd6', type: 'output_results',  config: {} },
+  ],
+  edges: [
+    { from: 'd1', to: 'd2', dataType: 'pipeline_context' },
+    { from: 'd2', to: 'd3', dataType: 'sample_records' },
+    { from: 'd3', to: 'd4', dataType: 'fastq_reads' },
+    { from: 'd4', to: 'd5', dataType: 'qc_output' },
+    { from: 'd5', to: 'd6', dataType: 'report_data' },
+  ],
+}
+
 export default function BuilderPage() {
   const [nodes, setNodes] = useState<PipelineNode[]>([])
   const [edges, setEdges] = useState<PipelineEdge[]>([])
@@ -57,6 +81,7 @@ export default function BuilderPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [currentIR, setCurrentIR] = useState<WorkflowIR | null>(null)
   const [missionState, setMissionState] = useState<MissionState>(INITIAL_MISSION)
+  const [demoResult] = useState<SimulationResult>(() => simulate(DEMO_IR))
   const [toasts, setToasts] = useState<ToastItem[]>([])
   // Track last toast to deduplicate: isValidConnection fires on every mouse-move during drag
   const lastToastRef = useRef<{ message: string; time: number } | null>(null)
@@ -148,6 +173,7 @@ export default function BuilderPage() {
 
   return (
     <main className="flex flex-col h-screen overflow-hidden bg-canvas">
+      <TutorialWizard />
       <ToastContainer toasts={toasts} onDismiss={dismissToast} durationMs={5000} />
       <div className="flex flex-1 overflow-hidden">
         {/* Block library */}
@@ -176,6 +202,7 @@ export default function BuilderPage() {
         simulationResult={simulationResult}
         validationResult={validationResult}
         currentIR={currentIR}
+        demoResult={demoResult}
         onSimulate={handleSimulate}
       />
     </main>
