@@ -29,7 +29,7 @@
 <p>
   <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200%20Prototype-orange?style=flat-square" />
   <img alt="Tests" src="https://img.shields.io/badge/Tests-33%20passing-brightgreen?style=flat-square" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
 </p>
 
@@ -225,7 +225,18 @@ This project is not an official nf-core product. It is a learning tool built *us
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+This project is released under a **MIT-based Non-Commercial License**.
+
+Free to use for personal, academic, educational, and open-source purposes.
+**Commercial use requires explicit written permission from the author.**
+
+> Commercial use includes — but is not limited to — selling, licensing, offering
+> as a paid service, integrating into a commercial product, or using in any
+> revenue-generating context.
+>
+> To request commercial use permission, contact: **ahmadlamloum8@gmail.com**
+
+See the full [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -234,5 +245,9 @@ MIT — see [LICENSE](LICENSE) for details.
 Built with care for bioinformatics beginners everywhere. 🧬
 
 <sub>Powered by <a href="https://nextflow.io">Nextflow</a> concepts · Aligned with <a href="https://nf-co.re">nf-core</a> documentation</sub>
+
+<br />
+
+<sub>© 2026 Ahmed Lamloum — Commercial use by author permission only.</sub>
 
 </div>
