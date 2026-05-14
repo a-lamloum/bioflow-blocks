@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { BLOCK_DEFINITIONS } from '@/lib/blocks/definitions'
-import type { BlockType } from '@/types'
+import { SamplesheetEditor } from '@/components/samplesheet/SamplesheetEditor'
+import { DEMO_SAMPLES } from '@/data/demo-samplesheet'
+import type { BlockType, SampleRow } from '@/types'
 
 interface BlockInspectorProps {
   selectedBlockType: BlockType | null
@@ -11,6 +13,7 @@ interface BlockInspectorProps {
 
 export function BlockInspector({ selectedBlockType, onClose }: BlockInspectorProps) {
   const panelRef = useRef<HTMLElement>(null)
+  const [sampleRows, setSampleRows] = useState<SampleRow[]>([...DEMO_SAMPLES])
 
   // Close on Escape
   const handleKeyDown = useCallback(
@@ -62,6 +65,16 @@ export function BlockInspector({ selectedBlockType, onClose }: BlockInspectorPro
       <div className="flex flex-col gap-4 px-4 pb-6">
         {/* Icon */}
         <div className="text-3xl" aria-hidden="true">{def.icon}</div>
+
+        {/* Samplesheet editor — shown only for samplesheet block */}
+        {selectedBlockType === 'samplesheet' && (
+          <div>
+            <h3 className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-2">
+              Edit your samplesheet
+            </h3>
+            <SamplesheetEditor rows={sampleRows} onChange={setSampleRows} />
+          </div>
+        )}
 
         {/* Beginner explanation */}
         <div>

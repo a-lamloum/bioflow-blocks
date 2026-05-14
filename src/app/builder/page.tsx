@@ -12,6 +12,7 @@ import { ToastContainer } from '@/components/ui/Toast'
 import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { CompletionBadge } from '@/components/mission/CompletionBadge'
+import { ProjectsPanel } from '@/components/projects/ProjectsPanel'
 import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
@@ -99,6 +100,7 @@ export default function BuilderPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [currentIR, setCurrentIR] = useState<WorkflowIR | null>(null)
   const [missionState, setMissionState] = useState<MissionState>(INITIAL_MISSION)
+  const [showProjects, setShowProjects] = useState(false)
   const [showBadge, setShowBadge] = useState(false)
   const [demoResult] = useState<SimulationResult>(() => simulate(DEMO_IR))
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -145,6 +147,18 @@ export default function BuilderPage() {
         data: { blockType, config: {}, hasError: false },
       }
       setNodes(prev => [...prev, newNode])
+    },
+    []
+  )
+
+  const handleLoadProject = useCallback(
+    (loadedNodes: PipelineNode[], loadedEdges: PipelineEdge[]) => {
+      setNodes(loadedNodes)
+      setEdges(loadedEdges)
+      setSimulationResult(null)
+      setValidationResult(null)
+      setSelectedNodeId(null)
+      setMissionState(INITIAL_MISSION)
     },
     []
   )
@@ -202,6 +216,15 @@ export default function BuilderPage() {
           onDismiss={() => setShowBadge(false)}
         />
       )}
+      {showProjects && (
+        <ProjectsPanel
+          currentNodes={nodes}
+          currentEdges={edges}
+          activeMission={activeMission}
+          onLoad={handleLoadProject}
+          onClose={() => setShowProjects(false)}
+        />
+      )}
 
       {/* ── Navbar ── */}
       <nav className="flex items-center justify-between px-5 h-12 shrink-0 border-b border-border bg-surface z-30">
@@ -218,11 +241,11 @@ export default function BuilderPage() {
 
           <span className="text-border-strong text-xs mx-1">/</span>
 
-          <Link
-            href="/missions"
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors"
-          >
+          <Link href="/missions" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             Missions
+          </Link>
+          <Link href="/modules" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
+            Modules
           </Link>
 
           {/* Active mission chip */}
@@ -237,15 +260,17 @@ export default function BuilderPage() {
 
         {/* Right: controls */}
         <div className="flex items-center gap-2">
-          <Link
-            href="/builder"
-            onClick={() => {
-              // Clear canvas hint
-            }}
-            className="hidden tablet:flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-muted hover:text-fg-secondary hover:bg-surface-2 transition-colors"
+          <button
+            onClick={() => setShowProjects(v => !v)}
+            className={[
+              'hidden tablet:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
+              showProjects
+                ? 'bg-teal-50 text-teal-600'
+                : 'text-fg-secondary hover:text-fg-primary hover:bg-surface-2',
+            ].join(' ')}
           >
-            New pipeline
-          </Link>
+            📂 Projects
+          </button>
           <ThemeToggle variant="light-surface" />
         </div>
       </nav>
