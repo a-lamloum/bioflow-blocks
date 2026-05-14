@@ -268,7 +268,7 @@ export default function LandingPage() {
         <div className="reveal" style={{ transitionDelay: '120ms' }}>
           <div className="rounded-2xl overflow-hidden border border-border"
             style={{ boxShadow: '0 24px 80px oklch(0% 0 0 / 0.12)' }}>
-            <img src="img/screenshot.png" alt="BioFlow Blocks in action" style={{ width: '100%', display: 'block' }} />
+            <img src="/screenshot.png" alt="BioFlow Blocks in action" style={{ width: '100%', display: 'block' }} />
           </div>
         </div>
       </section>
