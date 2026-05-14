@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { PipelineCanvas } from '@/components/canvas/PipelineCanvas'
 import { BlockLibrary } from '@/components/blocks/BlockLibrary'
 import { BlockInspector } from '@/components/inspector/BlockInspector'
 import { MissionPanel } from '@/components/mission/MissionPanel'
 import { RunPanel } from '@/components/run/RunPanel'
+import { ToastContainer } from '@/components/ui/Toast'
+import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
 import { simulate } from '@/lib/simulator/simulate'
@@ -21,6 +23,8 @@ import type {
   BlockType,
   DataType,
 } from '@/types'
+
+let toastCounter = 0
 
 const CONNECTION_REJECTION_MESSAGES: Partial<Record<DataType, string>> = {
   pipeline_context: 'Start Pipeline can only connect to a Samplesheet block.',
@@ -53,7 +57,22 @@ export default function BuilderPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [currentIR, setCurrentIR] = useState<WorkflowIR | null>(null)
   const [missionState, setMissionState] = useState<MissionState>(INITIAL_MISSION)
-  const [connectionRejectedMessage, setConnectionRejectedMessage] = useState<string | null>(null)
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+  // Track last toast to deduplicate: isValidConnection fires on every mouse-move during drag
+  const lastToastRef = useRef<{ message: string; time: number } | null>(null)
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }, [])
+
+  const addToast = useCallback((message: string, type: ToastItem['type'] = 'warning') => {
+    const now = Date.now()
+    // Suppress if the exact same message fired within the last 6 seconds
+    if (lastToastRef.current?.message === message && now - lastToastRef.current.time < 6000) return
+    lastToastRef.current = { message, time: now }
+    const id = String(++toastCounter)
+    setToasts(prev => [...prev, { id, message, type }])
+  }, [])
 
   // Recompile IR and advance mission step whenever nodes/edges change
   useEffect(() => {
@@ -88,9 +107,9 @@ export default function BuilderPage() {
 
   const handleConnectionRejected = useCallback(
     (sourceType: DataType, targetType: DataType) => {
-      setConnectionRejectedMessage(buildRejectionMessage(sourceType, targetType))
+      addToast(buildRejectionMessage(sourceType, targetType), 'warning')
     },
-    []
+    [addToast]
   )
 
   const handleSimulate = useCallback(() => {
@@ -129,6 +148,7 @@ export default function BuilderPage() {
 
   return (
     <main className="flex flex-col h-screen overflow-hidden bg-canvas">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} durationMs={5000} />
       <div className="flex flex-1 overflow-hidden">
         {/* Block library */}
         <BlockLibrary onAddToCanvas={handleAddToCanvas} />
@@ -156,7 +176,6 @@ export default function BuilderPage() {
         simulationResult={simulationResult}
         validationResult={validationResult}
         currentIR={currentIR}
-        connectionRejectedMessage={connectionRejectedMessage}
         onSimulate={handleSimulate}
       />
     </main>

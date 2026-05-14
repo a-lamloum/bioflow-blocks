@@ -1,124 +1,232 @@
 'use client'
 
 import { memo } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, useReactFlow } from '@xyflow/react'
 import type { NodeProps } from '@xyflow/react'
 import { BLOCK_DEFINITIONS } from '@/lib/blocks/definitions'
 import { DEMO_SAMPLES } from '@/data/demo-samplesheet'
 import type { PipelineNodeData } from '@/types'
 
-const CATEGORY_COLORS: Record<string, string> = {
-  pipeline: 'var(--color-block-start)',
-  data:     'var(--color-block-data)',
-  analysis: 'var(--color-block-analysis)',
-  output:   'var(--color-block-output)',
+// ─── Scratch-inspired color palette ─────────────────────────────────────────
+// Each block has a vivid fill and a darker shadow for the 3D push effect.
+
+const BLOCK_PALETTE: Record<string, { fill: string; shadow: string }> = {
+  start_pipeline:  { fill: 'oklch(68% 0.23 38)',  shadow: 'oklch(46% 0.23 38)'  },
+  samplesheet:     { fill: 'oklch(50% 0.22 258)', shadow: 'oklch(33% 0.22 258)' },
+  input_fastq:     { fill: 'oklch(58% 0.20 212)', shadow: 'oklch(40% 0.20 212)' },
+  qc_step:         { fill: 'oklch(50% 0.25 302)', shadow: 'oklch(33% 0.25 302)' },
+  trim_reads:      { fill: 'oklch(66% 0.22 24)',  shadow: 'oklch(46% 0.22 24)'  },
+  generate_report: { fill: 'oklch(52% 0.22 152)', shadow: 'oklch(35% 0.22 152)' },
+  output_results:  { fill: 'oklch(52% 0.20 232)', shadow: 'oklch(35% 0.20 232)' },
 }
 
-// Override specific block types that share a category but have distinct colors
-const BLOCK_COLORS: Record<string, string> = {
-  start_pipeline:  'var(--color-block-start)',
-  samplesheet:     'var(--color-block-data)',
-  input_fastq:     'var(--color-block-data)',
-  qc_step:         'var(--color-block-analysis)',
-  trim_reads:      'var(--color-block-process)',
-  generate_report: 'var(--color-block-report)',
-  output_results:  'var(--color-block-output)',
+// ─── SVG puzzle-block path builder ──────────────────────────────────────────
+// Generates a Scratch-style horizontal block path:
+//   left side  = concave notch  (input connector)
+//   right side = convex bump    (output connector)
+//   corners    = rounded (radius = cr)
+//
+// The SVG viewBox is (0 0 W H). The bump protrudes 14px beyond W on the right.
+// Input nodes (no output) get a flat right edge.
+// Output nodes (no input) get a flat left edge.
+
+const CR = 10   // corner radius
+const TR = 12   // connector tab radius
+const TY = 20   // connector tab half-height (24px total tab)
+
+function blockPath(W: number, H: number, hasInput: boolean, hasOutput: boolean): string {
+  const MID = H / 2
+
+  // Right side — convex bump or flat
+  const rightTop    = hasOutput ? `L ${W},${MID - TY}  A ${TR},${TR} 0 0 1 ${W},${MID + TY}` : ''
+  const rightFlat   = hasOutput ? '' : `L ${W},${H - CR}`
+  const rightAfter  = `L ${W},${H - CR}`
+
+  // Left side — concave notch or flat
+  const leftNotch = hasInput
+    ? `L 0,${MID + TY}  A ${TR},${TR} 0 0 0 0,${MID - TY}  L 0,${CR}`
+    : `L 0,${CR}`
+
+  if (hasOutput && hasInput) {
+    return [
+      `M ${CR},0`,
+      `L ${W - CR},0  Q ${W},0 ${W},${CR}`,
+      `L ${W},${MID - TY}  A ${TR},${TR} 0 0 1 ${W},${MID + TY}`,
+      `L ${W},${H - CR}  Q ${W},${H} ${W - CR},${H}`,
+      `L ${CR},${H}     Q 0,${H} 0,${H - CR}`,
+      `L 0,${MID + TY}  A ${TR},${TR} 0 0 0 0,${MID - TY}`,
+      `L 0,${CR}        Q 0,0 ${CR},0  Z`,
+    ].join(' ')
+  }
+
+  if (hasOutput && !hasInput) {
+    return [
+      `M ${CR},0`,
+      `L ${W - CR},0  Q ${W},0 ${W},${CR}`,
+      `L ${W},${MID - TY}  A ${TR},${TR} 0 0 1 ${W},${MID + TY}`,
+      `L ${W},${H - CR}  Q ${W},${H} ${W - CR},${H}`,
+      `L ${CR},${H}     Q 0,${H} 0,${H - CR}`,
+      `L 0,${CR}        Q 0,0 ${CR},0  Z`,
+    ].join(' ')
+  }
+
+  if (!hasOutput && hasInput) {
+    return [
+      `M ${CR},0`,
+      `L ${W - CR},0  Q ${W},0 ${W},${CR}`,
+      `L ${W},${H - CR}  Q ${W},${H} ${W - CR},${H}`,
+      `L ${CR},${H}     Q 0,${H} 0,${H - CR}`,
+      `L 0,${MID + TY}  A ${TR},${TR} 0 0 0 0,${MID - TY}`,
+      `L 0,${CR}        Q 0,0 ${CR},0  Z`,
+    ].join(' ')
+  }
+
+  // No connectors (shouldn't happen in practice)
+  return `M ${CR},0 L ${W-CR},0 Q ${W},0 ${W},${CR} L ${W},${H-CR} Q ${W},${H} ${W-CR},${H} L ${CR},${H} Q 0,${H} 0,${H-CR} L 0,${CR} Q 0,0 ${CR},0 Z`
 }
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export const PipelineNode = memo(function PipelineNode({
-  id: _id,
+  id,
   data: rawData,
   selected,
 }: NodeProps) {
   const data = rawData as unknown as PipelineNodeData
   const def = BLOCK_DEFINITIONS[data.blockType]
+  const { deleteElements } = useReactFlow()
+
   if (!def) return null
 
-  const bgColor = BLOCK_COLORS[data.blockType] ?? CATEGORY_COLORS[def.category] ?? 'var(--color-block-data)'
+  const palette = BLOCK_PALETTE[data.blockType] ?? { fill: 'oklch(52% 0.18 255)', shadow: 'oklch(35% 0.18 255)' }
+  const hasInput  = def.inputPorts.length > 0
+  const hasOutput = def.outputPorts.length > 0
+  const isSamplesheet = data.blockType === 'samplesheet'
+
+  const W = isSamplesheet ? 280 : 200
+  const H = isSamplesheet ? 100 : 68
+
+  const path = blockPath(W, H, hasInput, hasOutput)
+
+  // The SVG viewBox is W wide but the RIGHT bump extends ~14px beyond.
+  // We extend the foreignObject / SVG width to accommodate.
+  const svgW = hasOutput ? W + TR + 2 : W
+  const svgH = H + 6   // extra height for 3D shadow
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    deleteElements({ nodes: [{ id }] })
+  }
 
   return (
     <div
       role="button"
       tabIndex={0}
       aria-label={`${def.displayName} block`}
-      className={[
-        'relative flex flex-col min-w-40 min-h-18 rounded-lg',
-        'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-focus-ring',
-        'transition-shadow duration-fast ease-out-quart',
-        selected ? 'ring-2 ring-teal-500 ring-offset-1' : '',
-        data.hasError ? 'ring-2 ring-error' : '',
-      ].join(' ')}
-      style={{
-        backgroundColor: bgColor,
-        color: 'var(--color-block-text)',
-        boxShadow: selected
-          ? '0 4px 16px oklch(0% 0 0 / 0.18)'
-          : '0 2px 8px oklch(0% 0 0 / 0.10)',
-      }}
+      style={{ width: svgW, height: svgH, position: 'relative' }}
+      className="group focus-visible:outline-none"
     >
-      {/* Input port handles */}
-      {(def.inputPorts as typeof def.inputPorts).map((port, i) => (
-        <div
-          key={port.id}
-          className="absolute -left-2 top-1/2 -translate-y-1/2"
-          style={{ top: def.inputPorts.length > 1 ? `${30 + i * 20}%` : '50%' }}
-        >
-          {/* 32px touch area around 12px visual dot */}
-          <div className="flex items-center justify-center w-8 h-8 -m-2">
-            <Handle
-              type="target"
-              position={Position.Left}
-              id={port.id}
-              style={{
-                width: 12,
-                height: 12,
-                background: bgColor,
-                border: '2px solid var(--color-block-text)',
-                borderRadius: '50%',
-                position: 'relative',
-                transform: 'none',
-                top: 'auto',
-                left: 'auto',
-              }}
-            />
-          </div>
-        </div>
-      ))}
+      {/* ── SVG block body ── */}
+      <svg
+        width={svgW}
+        height={svgH}
+        viewBox={`0 0 ${svgW} ${svgH}`}
+        style={{ position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }}
+        aria-hidden="true"
+      >
+        {/* 3D shadow layer — same path, shifted 5px down, darker */}
+        <path d={path} fill={palette.shadow} transform="translate(0, 5)" />
+        {/* Main block face */}
+        <path
+          d={path}
+          fill={palette.fill}
+          stroke={selected ? 'white' : 'transparent'}
+          strokeWidth={selected ? 3 : 0}
+          style={{
+            filter: selected ? 'brightness(1.10)' : undefined,
+            transition: 'filter 120ms ease',
+          }}
+        />
+        {/* Subtle top highlight for depth */}
+        <path
+          d={`M ${CR + 2},2 L ${W - CR - 2},2`}
+          stroke="white"
+          strokeWidth="2"
+          strokeOpacity="0.25"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
 
-      {/* Block body */}
-      <div className="flex flex-col gap-1 px-3 py-2">
-        <div className="flex items-center gap-1.5">
-          <span className="text-base leading-none">{def.icon}</span>
-          <span className="text-sm font-semibold leading-tight">{def.displayName}</span>
-          {data.hasError && (
-            <span className="ml-auto text-xs">⚠️</span>
-          )}
+      {/* ── Delete button ── */}
+      <button
+        aria-label={`Remove ${def.displayName} block`}
+        onClick={handleDelete}
+        className={[
+          'absolute -top-3 -right-3 z-20',
+          'w-6 h-6 rounded-full flex items-center justify-center',
+          'text-xs font-bold bg-white shadow-md',
+          'transition-opacity duration-fast',
+          'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1',
+          selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+        ].join(' ')}
+        style={{ color: palette.fill }}
+      >
+        ✕
+      </button>
+
+      {/* ── Block content ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: W,
+          height: H,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 4,
+          padding: '8px 14px',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 18, lineHeight: 1 }}>{def.icon}</span>
+          <span style={{
+            color: 'white',
+            fontFamily: 'var(--font-sans)',
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: '-0.01em',
+            lineHeight: 1.2,
+            textShadow: `0 1px 2px ${palette.shadow}`,
+          }}>
+            {def.displayName}
+          </span>
         </div>
 
-        {/* Samplesheet block: show demo table inline */}
-        {data.blockType === 'samplesheet' && (
-          <div className="mt-1 rounded overflow-hidden text-xs font-mono border border-white/20">
-            <div
-              className="grid gap-0"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
-            >
-              {/* Header row */}
+        {/* Samplesheet: demo table */}
+        {isSamplesheet && (
+          <div style={{
+            borderRadius: 4,
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.25)',
+            fontSize: 10,
+            fontFamily: 'var(--font-mono)',
+            color: 'white',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: 'rgba(0,0,0,0.25)' }}>
               {['sample', 'fastq_1', 'fastq_2'].map(col => (
-                <div
-                  key={col}
-                  className="px-1 py-0.5 font-semibold truncate"
-                  style={{ background: 'oklch(0% 0 0 / 0.20)' }}
-                >
-                  {col}
-                </div>
+                <div key={col} style={{ padding: '2px 4px', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{col}</div>
               ))}
-              {/* First data row only */}
+            </div>
+            {/* Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', background: 'rgba(0,0,0,0.12)' }}>
               {['sample', 'fastq_1', 'fastq_2'].map(col => (
-                <div
-                  key={col}
-                  className="px-1 py-0.5 truncate"
-                  style={{ background: 'oklch(0% 0 0 / 0.10)' }}
-                >
+                <div key={col} style={{ padding: '2px 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {String(DEMO_SAMPLES[0][col as keyof typeof DEMO_SAMPLES[0]])}
                 </div>
               ))}
@@ -127,32 +235,45 @@ export const PipelineNode = memo(function PipelineNode({
         )}
       </div>
 
-      {/* Output port handles */}
-      {(def.outputPorts as typeof def.outputPorts).map((port, i) => (
-        <div
+      {/* ── React Flow handles — invisible click targets positioned at notch / bump ── */}
+      {def.inputPorts.map((port, i) => (
+        <Handle
           key={port.id}
-          className="absolute -right-2"
-          style={{ top: def.outputPorts.length > 1 ? `${30 + i * 20}%` : '50%', transform: 'translateY(-50%)' }}
-        >
-          <div className="flex items-center justify-center w-8 h-8 -m-2">
-            <Handle
-              type="source"
-              position={Position.Right}
-              id={port.id}
-              style={{
-                width: 12,
-                height: 12,
-                background: bgColor,
-                border: '2px solid var(--color-block-text)',
-                borderRadius: '50%',
-                position: 'relative',
-                transform: 'none',
-                top: 'auto',
-                right: 'auto',
-              }}
-            />
-          </div>
-        </div>
+          type="target"
+          position={Position.Left}
+          id={port.id}
+          style={{
+            left: -1,
+            top: H / 2 + (def.inputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0),
+            width: 20,
+            height: 24,
+            background: 'transparent',
+            border: 'none',
+            borderRadius: 0,
+            transform: 'translateY(-50%)',
+            cursor: 'crosshair',
+          }}
+        />
+      ))}
+
+      {def.outputPorts.map((port, i) => (
+        <Handle
+          key={port.id}
+          type="source"
+          position={Position.Right}
+          id={port.id}
+          style={{
+            right: -TR,
+            top: H / 2 + (def.outputPorts.length > 1 ? (i === 0 ? -TY : TY) : 0),
+            width: 20,
+            height: 24,
+            background: 'transparent',
+            border: 'none',
+            borderRadius: 0,
+            transform: 'translateY(-50%)',
+            cursor: 'crosshair',
+          }}
+        />
       ))}
     </div>
   )

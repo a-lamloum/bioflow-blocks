@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TraceList } from './TraceList'
 import { ReportCard } from './ReportCard'
@@ -10,7 +10,6 @@ interface RunPanelProps {
   simulationResult: SimulationResult | null
   validationResult: ValidationResult | null
   currentIR: WorkflowIR | null
-  connectionRejectedMessage: string | null
   onSimulate: () => void
 }
 
@@ -18,25 +17,12 @@ export function RunPanel({
   simulationResult,
   validationResult,
   currentIR,
-  connectionRejectedMessage,
   onSimulate,
 }: RunPanelProps) {
   const [expanded, setExpanded] = useState(false)
   const [showJson, setShowJson] = useState(false)
-  const [dismissedMessage, setDismissedMessage] = useState<string | null>(null)
-
-  // Auto-dismiss connection rejected message after 3 seconds
-  useEffect(() => {
-    if (!connectionRejectedMessage) return
-    setDismissedMessage(null)
-    const timer = setTimeout(() => setDismissedMessage(connectionRejectedMessage), 3000)
-    return () => clearTimeout(timer)
-  }, [connectionRejectedMessage])
 
   const hasErrors = validationResult && !validationResult.valid && validationResult.errors.length > 0
-  const showRejectionHint =
-    connectionRejectedMessage &&
-    connectionRejectedMessage !== dismissedMessage
 
   return (
     <section
@@ -58,18 +44,6 @@ export function RunPanel({
           <span className="text-xs">{expanded ? '▼' : '▲'}</span>
         </button>
       </div>
-
-      {/* Connection rejected transient hint */}
-      {showRejectionHint && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mx-4 mt-2 px-3 py-1.5 rounded-md text-sm"
-          style={{ background: 'oklch(68% 0.150 75 / 0.12)', color: 'var(--color-fg-primary)' }}
-        >
-          {connectionRejectedMessage}
-        </div>
-      )}
 
       {/* Idle state — no simulation yet */}
       {!simulationResult && !hasErrors && (
@@ -105,15 +79,12 @@ export function RunPanel({
       {/* Active state — simulation result */}
       {simulationResult && (
         <div className="flex flex-col overflow-y-auto flex-1">
-          {/* Report card at top */}
           {simulationResult.reportCard && (
             <ReportCard report={simulationResult.reportCard} />
           )}
 
-          {/* Trace */}
           <TraceList entries={simulationResult.trace} />
 
-          {/* Generated command */}
           {simulationResult.generatedCommand && (
             <div className="px-4 py-3 border-t border-border bg-surface-2">
               <p className="text-xs text-fg-muted mb-1">
@@ -125,7 +96,6 @@ export function RunPanel({
             </div>
           )}
 
-          {/* JSON toggle */}
           <div className="px-4 py-2 border-t border-border">
             <button
               aria-expanded={showJson}
@@ -146,7 +116,6 @@ export function RunPanel({
             )}
           </div>
 
-          {/* Re-simulate */}
           <div className="px-4 py-2 border-t border-border flex justify-end">
             <Button onClick={onSimulate} variant="secondary" className="text-xs h-8">
               ▶ Run again

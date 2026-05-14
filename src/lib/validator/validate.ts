@@ -1,4 +1,4 @@
-import { DATA_TYPE_COMPATIBILITY } from '@/lib/blocks/definitions'
+import { DATA_TYPE_COMPATIBILITY, BLOCK_DEFINITIONS } from '@/lib/blocks/definitions'
 import { topologicalSort } from '@/lib/compiler/compile'
 import type { WorkflowIR, ValidationResult, ValidationError } from '@/types'
 
@@ -59,25 +59,24 @@ export function validate(ir: WorkflowIR): ValidationResult {
     })
   }
 
-  // 4. Edge data-type compatibility
+  // 4. Edge data-type compatibility — verify the target block accepts this data type.
   ir.edges.forEach(edge => {
-    const allowed = DATA_TYPE_COMPATIBILITY[edge.dataType] ?? []
-    // Find what the target block's input port expects
     const targetBlock = ir.blocks.find(b => b.id === edge.to)
-    if (!targetBlock) return
+    const sourceBlock = ir.blocks.find(b => b.id === edge.from)
+    if (!targetBlock || !sourceBlock) return
 
-    // Check if the dataType is in the allowed list for any valid outgoing type
-    // (we trust the compiler captured the dataType from the port; just verify it's not in incompatibility)
-    // Simple check: ensure the source can emit this dataType at all
-    const allAllowedSources = Object.entries(DATA_TYPE_COMPATIBILITY)
-      .filter(([, targets]) => targets.includes(edge.dataType))
-      .map(([src]) => src)
+    const targetDef = BLOCK_DEFINITIONS[targetBlock.type]
+    if (!targetDef) return
 
-    if (allAllowedSources.length === 0 && edge.dataType !== 'pipeline_context') {
+    const targetAcceptsType = targetDef.inputPorts.some(
+      (p: { dataType: string }) => p.dataType === edge.dataType
+    )
+
+    if (!targetAcceptsType) {
       errors.push({
         blockId: edge.from,
         code: 'INVALID_CONNECTION',
-        message: `This connection carries an incompatible data type.`,
+        message: `The "${targetBlock.type.replace(/_/g, ' ')}" block cannot accept this type of connection.`,
         fix: 'Check that the blocks are connected in the correct order.',
       })
     }

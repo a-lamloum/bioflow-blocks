@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   Background,
@@ -40,28 +40,15 @@ export function PipelineCanvas({
   const [edges, setEdges, handleEdgesChange] = useEdgesState<PipelineEdge>([])
   const rfInstance = useRef<ReactFlowInstance<PipelineNodeType, PipelineEdge> | null>(null)
 
-  // Propagate state changes upward for compile/IR
-  const handleNodesChangeAndPropagate = useCallback(
-    (changes: Parameters<typeof handleNodesChange>[0]) => {
-      handleNodesChange(changes)
-      setNodes(nds => {
-        onNodesChange(nds)
-        return nds
-      })
-    },
-    [handleNodesChange, setNodes, onNodesChange]
-  )
+  // Propagate state changes to parent via effects, never inside state updaters.
+  // This avoids "setState during render of another component" errors.
+  const onNodesChangeRef = useRef(onNodesChange)
+  const onEdgesChangeRef = useRef(onEdgesChange)
+  useEffect(() => { onNodesChangeRef.current = onNodesChange }, [onNodesChange])
+  useEffect(() => { onEdgesChangeRef.current = onEdgesChange }, [onEdgesChange])
 
-  const handleEdgesChangeAndPropagate = useCallback(
-    (changes: Parameters<typeof handleEdgesChange>[0]) => {
-      handleEdgesChange(changes)
-      setEdges(eds => {
-        onEdgesChange(eds)
-        return eds
-      })
-    },
-    [handleEdgesChange, setEdges, onEdgesChange]
-  )
+  useEffect(() => { onNodesChangeRef.current(nodes) }, [nodes])
+  useEffect(() => { onEdgesChangeRef.current(edges) }, [edges])
 
   const isValidConnection = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,12 +61,23 @@ export function PipelineCanvas({
       const targetDef = BLOCK_DEFINITIONS[targetNode.data.blockType]
       if (!sourceDef || !targetDef) return false
 
-      const sourcePort = sourceDef.outputPorts.find(p => p.id === connection.sourceHandle)
-      const targetPort = targetDef.inputPorts.find(p => p.id === connection.targetHandle)
+      // React Flow v12 may pass null handles when there is only one handle on a
+      // node — fall back to the first available port in that case.
+      const sourcePort = connection.sourceHandle
+        ? sourceDef.outputPorts.find(p => p.id === connection.sourceHandle) ?? sourceDef.outputPorts[0]
+        : sourceDef.outputPorts[0]
+
+      const targetPort = connection.targetHandle
+        ? targetDef.inputPorts.find(p => p.id === connection.targetHandle)
+            ?? targetDef.inputPorts.find(p => p.dataType === sourcePort?.dataType)
+            ?? targetDef.inputPorts[0]
+        : targetDef.inputPorts.find(p => p.dataType === sourcePort?.dataType)
+            ?? targetDef.inputPorts[0]
+
       if (!sourcePort || !targetPort) return false
 
-      const allowed = DATA_TYPE_COMPATIBILITY[sourcePort.dataType] ?? []
-      const valid = allowed.includes(targetPort.dataType)
+      // A connection is valid when the source output type matches the target input type.
+      const valid = sourcePort.dataType === targetPort.dataType
       if (!valid) {
         onConnectionRejected(sourcePort.dataType, targetPort.dataType)
       }
@@ -92,10 +90,12 @@ export function PipelineCanvas({
     (connection: Connection) => {
       const sourceNode = nodes.find(n => n.id === connection.source)
       const sourceDef = sourceNode ? BLOCK_DEFINITIONS[sourceNode.data.blockType] : null
-      const sourcePort = sourceDef?.outputPorts.find(p => p.id === connection.sourceHandle)
+      const sourcePort = connection.sourceHandle
+        ? sourceDef?.outputPorts.find(p => p.id === connection.sourceHandle) ?? sourceDef?.outputPorts[0]
+        : sourceDef?.outputPorts[0]
 
-      setEdges(eds => {
-        const newEdges = addEdge(
+      setEdges(eds =>
+        addEdge(
           {
             ...connection,
             type: 'default',
@@ -106,11 +106,9 @@ export function PipelineCanvas({
           },
           eds
         )
-        onEdgesChange(newEdges)
-        return newEdges
-      })
+      )
     },
-    [nodes, setEdges, onEdgesChange]
+    [nodes, setEdges]
   )
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -136,20 +134,12 @@ export function PipelineCanvas({
         id: uuidv4(),
         type: 'pipelineBlock',
         position,
-        data: {
-          blockType,
-          config: {},
-          hasError: false,
-        },
+        data: { blockType, config: {}, hasError: false },
       }
 
-      setNodes(nds => {
-        const updated = [...nds, newNode]
-        onNodesChange(updated)
-        return updated
-      })
+      setNodes(nds => [...nds, newNode])
     },
-    [setNodes, onNodesChange]
+    [setNodes]
   )
 
   const onNodeClick = useCallback(
@@ -170,8 +160,8 @@ export function PipelineCanvas({
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onNodesChange={handleNodesChangeAndPropagate}
-        onEdgesChange={handleEdgesChangeAndPropagate}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
         onConnect={onConnect}
         isValidConnection={isValidConnection}
         onNodeClick={onNodeClick}
@@ -179,7 +169,7 @@ export function PipelineCanvas({
         onInit={(instance: ReactFlowInstance<PipelineNodeType, PipelineEdge>) => { rfInstance.current = instance }}
         fitView
         style={{ background: 'var(--color-canvas)' }}
-        deleteKeyCode="Delete"
+        deleteKeyCode={['Delete', 'Backspace']}
       >
         <Background color="var(--color-border)" gap={20} size={1} />
         <Controls />

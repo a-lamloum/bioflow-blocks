@@ -4,13 +4,19 @@ import type { BlockDefinition, BlockType, DataType } from '@/types'
 // Maps each source DataType to the target DataTypes it may connect to.
 // Used by PipelineCanvas.isValidConnection and the validator.
 
+// Each output port carries a DataType. A valid connection requires the target
+// input port to declare the SAME DataType. The matrix maps each type to itself
+// (identity) because both ends of a wire carry the same data.
+//
+// The only multi-entry rows are types that can flow into MULTIPLE input types —
+// none exist here; all connections are 1-to-1 by type.
 export const DATA_TYPE_COMPATIBILITY: Record<DataType, DataType[]> = {
-  pipeline_context: ['sample_records'],
-  sample_records:   ['fastq_reads'],
-  fastq_reads:      ['qc_output', 'trimmed_reads'],
-  qc_output:        ['report_data'],
-  trimmed_reads:    ['report_data'],
-  report_data:      ['final_output'],
+  pipeline_context: ['pipeline_context'],
+  sample_records:   ['sample_records'],
+  fastq_reads:      ['fastq_reads'],
+  qc_output:        ['qc_output'],
+  trimmed_reads:    ['trimmed_reads'],
+  report_data:      ['report_data'],
   final_output:     [],
 }
 
