@@ -51,7 +51,7 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 | Persona | Context |
 |---|---|
-| **MSc bioinformatics students** | Need to understand nf-core pipelines for coursework or thesis |
+| **Bioinformatics students** | Need to understand nf-core pipelines for coursework or thesis |
 | **Wet-lab researchers** | Want to know what happens to their sequencing files |
 | **Workshop instructors** | Need an interactive teaching tool for 60–90 minute sessions |
 | **Junior bioinformaticians** | Know commands but not the underlying structure |
