@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="img/Banner%20_%20dark%20_1280%20_%20320_.png" alt="BioFlow Blocks Banner" width="100%" />
+<img src="img/Banner _ compact _960 _ 480_.png" alt="BioFlow Blocks Banner" width="100%" />
 
 <br />
 <br />
 
-<img src="img/BioFlow%20Logo.svg" alt="BioFlow Blocks Logo" width="72" height="72" />
+<!-- <img src="img/BioFlow%20Logo.svg" alt="BioFlow Blocks Logo" width="72" height="72" /> -->
 
 <h1>BioFlow Blocks</h1>
 
