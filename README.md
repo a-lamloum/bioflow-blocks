@@ -233,8 +233,6 @@ Free to use for personal, academic, educational, and open-source purposes.
 > Commercial use includes — but is not limited to — selling, licensing, offering
 > as a paid service, integrating into a commercial product, or using in any
 > revenue-generating context.
->
-> To request commercial use permission, contact: **ahmadlamloum8@gmail.com**
 
 See the full [LICENSE](LICENSE) file for details.
 
