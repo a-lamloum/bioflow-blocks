@@ -228,7 +228,10 @@ export function simulate(ir: WorkflowIR): SimulationResult {
 
   const reportCard = ctx.reportGenerated ? buildReportCard(ctx) : null
   const generatedCommand =
-    'nextflow run nf-core/demo -profile test,docker --outdir results'
+    'nextflow run nf-core/rnaseq -profile test,docker \\\n' +
+    '  --input samplesheet.csv \\\n' +
+    '  --genome GRCh38 \\\n' +
+    '  --outdir results'
 
   return { status: 'completed', trace, reportCard, generatedCommand }
 }

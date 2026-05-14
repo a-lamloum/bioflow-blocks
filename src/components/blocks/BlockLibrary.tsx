@@ -59,17 +59,22 @@ export function BlockLibrary({ onAddToCanvas }: BlockLibraryProps) {
               >
                 <span className="text-sm">{pack.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-fg-primary truncate">{pack.name}</span>
-                    <span
-                      className="shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded"
-                      style={{
-                        background: PHASE_BADGE_COLORS[pack.phase] + '22',
-                        color: PHASE_BADGE_COLORS[pack.phase],
-                        fontSize: 10,
-                      }}
-                    >
-                      {PHASE_LABELS[pack.phase]}
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-fg-primary truncate">{pack.name}</span>
+                      <span
+                        className="shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded"
+                        style={{
+                          background: PHASE_BADGE_COLORS[pack.phase] + '22',
+                          color: PHASE_BADGE_COLORS[pack.phase],
+                          fontSize: 10,
+                        }}
+                      >
+                        {PHASE_LABELS[pack.phase]}
+                      </span>
+                    </div>
+                    <span className="text-xs text-fg-muted truncate" style={{ fontSize: 10 }}>
+                      {pack.pipeline}
                     </span>
                   </div>
                 </div>

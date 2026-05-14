@@ -23,71 +23,88 @@ export interface PackMeta {
   color: string
   phase: number
   available: boolean
+  /** The nf-core pipeline this pack teaches */
+  pipeline: string
+  pipelineUrl: string
 }
 
 export const PACKS: PackMeta[] = [
   {
     id: 'rnaseq_qc',
     name: 'RNA-seq QC',
-    description: 'Quality control for RNA sequencing data — the first step in any RNA-seq workflow.',
+    description: 'Learn the QC and preprocessing steps of nf-core/rnaseq — samplesheets, FASTQC, trimming, and MultiQC reporting.',
     icon: '🧬',
     color: 'oklch(52% 0.22 152)',
     phase: 0,
     available: true,
+    pipeline: 'nf-core/rnaseq',
+    pipelineUrl: 'https://nf-co.re/rnaseq',
   },
   {
     id: 'fastq_basics',
     name: 'FASTQ Basics',
-    description: 'Understand sequencing files, paired-end reads, adapter contamination, and file formats.',
+    description: 'Understand the raw sequencing data that flows through every nf-core pipeline — paired-end reads, adapter contamination, and nf-core input conventions.',
     icon: '📄',
     color: 'oklch(58% 0.20 212)',
     phase: 0,
     available: true,
+    pipeline: 'nf-core (all pipelines)',
+    pipelineUrl: 'https://nf-co.re/docs/running/run-pipelines',
   },
   {
     id: 'rnaseq_full',
-    name: 'RNA-seq Full Pipeline',
-    description: 'Complete RNA-seq workflow: alignment, feature counting, and differential expression analysis.',
+    name: 'nf-core/rnaseq Full',
+    description: 'The complete nf-core/rnaseq workflow: STAR alignment, featureCounts, and differential abundance with nf-core/differentialabundance.',
     icon: '🔬',
     color: 'oklch(50% 0.25 302)',
     phase: 1,
     available: false,
+    pipeline: 'nf-core/rnaseq',
+    pipelineUrl: 'https://nf-co.re/rnaseq',
   },
   {
     id: 'variant_calling',
-    name: 'Variant Calling',
-    description: 'Identify genetic variants from sequencing data using GATK and alignment tools.',
+    name: 'nf-core/sarek',
+    description: 'Learn the nf-core/sarek germline variant calling workflow: BWAMEM2 alignment, GATK4 best-practices, and VEP annotation.',
     icon: '🧪',
     color: 'oklch(52% 0.20 232)',
     phase: 2,
     available: false,
+    pipeline: 'nf-core/sarek',
+    pipelineUrl: 'https://nf-co.re/sarek',
   },
   {
     id: 'metagenomics',
-    name: 'Metagenomics',
-    description: 'Classify and profile microbial communities from shotgun sequencing data.',
+    name: 'nf-core/taxprofiler',
+    description: 'Learn the nf-core/taxprofiler pipeline: host removal, Kraken2 + Bracken classification, MetaPhlAn profiling, and Krona visualisation.',
     icon: '🦠',
     color: 'oklch(50% 0.22 258)',
     phase: 2,
     available: false,
+    pipeline: 'nf-core/taxprofiler',
+    pipelineUrl: 'https://nf-co.re/taxprofiler',
   },
   {
     id: 'single_cell',
-    name: 'Single Cell',
-    description: 'Analyse single-cell RNA sequencing data: demultiplexing, clustering, and visualization.',
+    name: 'nf-core/scrnaseq',
+    description: 'Learn the nf-core/scrnaseq pipeline: Cell Ranger demultiplexing, Seurat QC, normalisation, UMAP, clustering, and marker genes.',
     icon: '🔴',
     color: 'oklch(50% 0.25 15)',
     phase: 2,
     available: false,
+    pipeline: 'nf-core/scrnaseq',
+    pipelineUrl: 'https://nf-co.re/scrnaseq',
   },
   {
     id: 'nfcore_tools',
-    name: 'nf-core Tools',
-    description: 'Learn how to create modules, lint pipelines, and contribute to the nf-core community.',
+    name: 'nf-core/tools',
+    description: 'Learn the nf-core/tools CLI: create modules with `nf-core modules create`, lint pipelines with `nf-core lint`, and contribute to the nf-core community.',
     icon: '🛠️',
     color: 'oklch(52% 0.18 85)',
     phase: 3,
     available: false,
+    pipeline: 'nf-core/tools',
+    pipelineUrl: 'https://nf-co.re/docs/nf-core-tools',
   },
 ]
 
@@ -105,140 +122,179 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     type: 'start_pipeline',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Start Pipeline',
-    technicalConcept: 'Workflow entry point',
-    description: 'This is where your pipeline begins. Every pipeline needs exactly one starting block.',
-    technicalDetail: 'In Nextflow DSL2, the workflow {} block defines the entry point. This block initialises the pipeline context and triggers downstream processes.',
+    technicalConcept: '`workflow {}` entry point — nf-core/rnaseq main.nf',
+    description: 'This is where your pipeline begins. Every nf-core pipeline has exactly one workflow entry point.',
+    technicalDetail:
+      'In Nextflow DSL2, the top-level `workflow {}` block in `main.nf` defines the pipeline entry point. ' +
+      'nf-core/rnaseq\'s `main.nf` calls the RNASEQ workflow, which in turn calls subworkflows like ' +
+      'FASTQ_FASTQC_UMITOOLS_TRIMGALORE and ALIGN_STAR.',
     category: 'pipeline', icon: '🚀',
     inputPorts: [],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake: 'Adding more than one Start Pipeline block. Only one is allowed per pipeline.',
-    exampleOutput: 'Initialises the pipeline and passes context to the next block.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/pipelines/overview',
+    commonMistake: 'Adding more than one Start Pipeline block. nf-core pipelines have a single workflow entry point.',
+    exampleOutput: 'Pipeline context initialised — equivalent to `nextflow run nf-core/rnaseq` starting.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq',
+    realToolExamples: ['nf-core/rnaseq main.nf'],
   }),
 
   samplesheet: B({
     type: 'samplesheet',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Samplesheet',
-    technicalConcept: 'Pipeline input samplesheet / params.input',
-    description: 'This table tells the pipeline which files belong to each sample. Each row is one biological sample.',
-    technicalDetail: 'nf-core pipelines accept input via a CSV samplesheet referenced by --input. Required columns vary by pipeline; RNA-seq needs sample, fastq_1, fastq_2, strandedness.',
+    technicalConcept: '`--input` samplesheet / `SAMPLESHEET_CHECK` subworkflow — nf-core/rnaseq',
+    description: 'This CSV table tells nf-core/rnaseq which files belong to each sample. Every nf-core pipeline that accepts sequencing data uses a samplesheet.',
+    technicalDetail:
+      'nf-core/rnaseq reads the samplesheet via `Channel.fromSamplesheet(params.input)` using the `SAMPLESHEET_CHECK` subworkflow. ' +
+      'Required columns: `sample`, `fastq_1`, `fastq_2`, `strandedness`. ' +
+      'The schema is defined in `assets/schema_input.json` and validated at startup.',
     category: 'data', icon: '📋',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-samples', label: 'Sample records', dataType: 'sample_records' }],
-    commonMistake: 'Leaving fastq_2 empty for paired-end data. Both R1 and R2 files are required.',
-    exampleOutput: 'A validated list of sample records ready for processing.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+    commonMistake: 'Leaving `fastq_2` empty for paired-end data. nf-core/rnaseq will fail validation if `fastq_2` is missing for paired-end samples.',
+    exampleOutput: 'Validated sample channel emitted to the FASTQ input step — equivalent to `SAMPLESHEET_CHECK` passing.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/docs/usage#samplesheet-input',
+    realToolExamples: ['SAMPLESHEET_CHECK (nf-core subworkflow)', 'nf-validation plugin'],
   }),
 
   input_fastq: B({
     type: 'input_fastq',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Input FASTQ',
-    technicalConcept: 'FASTQ input channel / paired-end reads',
-    description: 'These are raw sequencing read files from a sequencing machine. Each sample produces two files (R1 and R2) in paired-end mode.',
-    technicalDetail: 'Nextflow channels carry file paths between processes. FASTQ files are emitted as tuples of [meta, fastq_1, fastq_2] for paired-end libraries.',
+    technicalConcept: '`Channel.fromSamplesheet()` FASTQ channel — nf-core/rnaseq',
+    description: 'These are the raw sequencing read files. nf-core/rnaseq loads them from the samplesheet as paired-end FASTQ tuples.',
+    technicalDetail:
+      'nf-core/rnaseq emits FASTQ files as `[meta, fastq_1, fastq_2]` tuples via `Channel.fromSamplesheet()`. ' +
+      'The `meta` map carries sample metadata (id, single_end, strandedness) through all downstream processes. ' +
+      'This is the standard nf-core channel convention used across modules.',
     category: 'data', icon: '🧬',
     inputPorts: [{ id: 'in-samples', label: 'Sample records', dataType: 'sample_records' }],
     outputPorts: [{ id: 'out-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
-    commonMistake: 'Connecting this block before the Samplesheet block. The samplesheet must come first.',
-    exampleOutput: 'Paired-end FASTQ read files for each sample, ready for analysis.',
-    realToolExamples: ['FASTQ', 'gzip'],
+    commonMistake: 'Connecting Input FASTQ before the Samplesheet block. The samplesheet validation must run first.',
+    exampleOutput: 'FASTQ read tuples `[meta, reads_1, reads_2]` flowing into QC and alignment processes.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/docs/usage',
+    realToolExamples: ['Channel.fromSamplesheet()', 'nf-validation'],
   }),
 
   qc_step: B({
     type: 'qc_step',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'QC Step',
-    technicalConcept: 'Quality-control process / module (FastQC concept)',
-    description: 'This checks whether your sequencing reads look healthy — measuring quality, length, and common issues.',
-    technicalDetail: 'nf-core modules wrap tools like FastQC into reusable process definitions. Quality metrics are collected and emitted as report files consumed by MultiQC.',
+    technicalConcept: '`FASTQC` nf-core module — nf-core/rnaseq QC subworkflow',
+    description: 'Checks whether your sequencing reads look healthy. nf-core/rnaseq runs FASTQC on every sample before trimming.',
+    technicalDetail:
+      'nf-core/rnaseq calls the `FASTQC` module (from nf-core/modules) inside the ' +
+      '`FASTQ_FASTQC_UMITOOLS_TRIMGALORE` subworkflow. ' +
+      'FASTQC generates per-sample HTML reports covering per-base quality scores, GC content, ' +
+      'sequence duplication, and adapter contamination. These are later aggregated by MULTIQC.',
     category: 'analysis', icon: '🔬',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-qc', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Skipping this step. QC should always run before downstream analysis.',
-    exampleOutput: 'A QC report showing read quality scores, length distribution, and GC content.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-    realToolExamples: ['FastQC', 'fastp'],
+    commonMistake: 'Skipping QC before alignment. nf-core/rnaseq always runs FASTQC before and after trimming.',
+    exampleOutput: 'Per-sample FASTQC HTML reports and ZIP files — inputs to the MULTIQC step.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/fastqc',
+    realToolExamples: ['FASTQC (nf-core/modules)', 'nf-core/rnaseq FASTQ_FASTQC_UMITOOLS_TRIMGALORE'],
   }),
 
   trim_reads: B({
     type: 'trim_reads',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Trim Reads',
-    technicalConcept: 'Read preprocessing process / module (Trimmomatic / fastp concept)',
-    description: 'This removes low-quality parts from reads before later analysis. Trimming improves the reliability of downstream results.',
-    technicalDetail: 'Preprocessing modules trim adapter sequences and low-quality bases. fastp and Trimmomatic are common nf-core module wrappers for this step.',
+    technicalConcept: '`TRIMGALORE` or `FASTP` nf-core module — nf-core/rnaseq preprocessing',
+    description: 'Removes adapter sequences and low-quality bases before alignment. nf-core/rnaseq uses TrimGalore by default.',
+    technicalDetail:
+      'nf-core/rnaseq trims reads using the `TRIMGALORE` module (wrapping Trim Galore + Cutadapt). ' +
+      'Alternatively, `--trimmer fastp` switches to the `FASTP` module. ' +
+      'Both modules are in nf-core/modules and follow the standard `[meta, reads]` input convention. ' +
+      'Trimming is optional but enabled by default via `params.skip_trimming = false`.',
     category: 'analysis', icon: '✂️',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-trimmed', label: 'Trimmed reads', dataType: 'trimmed_reads' }],
-    commonMistake: 'Placing Trim Reads after QC Step. Trimming should happen before or alongside QC.',
-    exampleOutput: 'Cleaned FASTQ files with adapter sequences and low-quality bases removed.',
-    realToolExamples: ['fastp', 'Trimmomatic', 'cutadapt'],
+    commonMistake: 'Using `--skip_trimming` without understanding the consequences. Adapter contamination causes misaligned reads.',
+    exampleOutput: 'Trimmed FASTQ files and a TrimGalore report — both fed into the MULTIQC module.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/trimgalore',
+    realToolExamples: ['TRIMGALORE (nf-core/modules)', 'FASTP (nf-core/modules)'],
   }),
 
   generate_report: B({
     type: 'generate_report',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Generate Report',
-    technicalConcept: 'Report aggregation / MultiQC-like summary step',
-    description: 'This gathers results from earlier steps into one readable summary report.',
-    technicalDetail: 'MultiQC aggregates QC outputs from many tools into a single HTML report. In nf-core pipelines, a MULTIQC module is typically the final reporting step.',
+    technicalConcept: '`MULTIQC` nf-core module — nf-core/rnaseq summary step',
+    description: 'Collects QC outputs from all steps into one readable HTML report. nf-core/rnaseq always ends with a MultiQC report.',
+    technicalDetail:
+      'The `MULTIQC` module (nf-core/modules) aggregates outputs from FASTQC, TrimGalore, STAR, and other tools ' +
+      'into a single interactive HTML report. nf-core/rnaseq passes all QC channels into MULTIQC via ' +
+      'the `ch_multiqc_files` channel. The report is published to `results/multiqc/`.',
     category: 'output', icon: '📊',
     inputPorts: [
       { id: 'in-qc', label: 'QC output', dataType: 'qc_output' },
       { id: 'in-trimmed', label: 'Trimmed reads (optional)', dataType: 'trimmed_reads' },
     ],
     outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Not connecting any input to Generate Report. It needs at least one QC or analysis output.',
-    exampleOutput: 'An HTML summary report showing quality metrics for every sample.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-    realToolExamples: ['MultiQC'],
+    commonMistake: 'Not connecting any QC output. MULTIQC needs at least one report file to generate a summary.',
+    exampleOutput: 'An interactive HTML report at `results/multiqc/multiqc_report.html` — the standard nf-core output.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/multiqc',
+    realToolExamples: ['MULTIQC (nf-core/modules)'],
   }),
 
   output_results: B({
     type: 'output_results',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'simulated',
     displayName: 'Output Results',
-    technicalConcept: 'Output directory / publishDir directive',
-    description: "This is where your final results appear. All files saved here are the deliverables from your pipeline run.",
-    technicalDetail: "Nextflow's publishDir directive copies process outputs to a final results folder. nf-core pipelines use --outdir to set this path.",
+    technicalConcept: '`publishDir` directive / `--outdir` parameter — nf-core/rnaseq',
+    description: 'This is where all final results appear. nf-core pipelines use the `--outdir` parameter to control where results are saved.',
+    technicalDetail:
+      'Every nf-core module uses the `publishDir` directive to copy outputs to `params.outdir`. ' +
+      'nf-core/rnaseq organises results into subdirectories: `results/fastqc/`, `results/trimgalore/`, ' +
+      '`results/star_salmon/`, `results/multiqc/`. ' +
+      'Pass `--outdir my_results` on the command line to change the destination.',
     category: 'output', icon: '📁',
     inputPorts: [{ id: 'in-report', label: 'Report data', dataType: 'report_data' }],
     outputPorts: [],
-    commonMistake: 'Forgetting to connect Generate Report before Output Results. The report block must come first.',
-    exampleOutput: 'Final QC report and result files saved to the output directory.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+    commonMistake: 'Forgetting `--outdir`. Without it, nf-core/rnaseq writes to `./results` by default.',
+    exampleOutput: 'Published results in `results/` — equivalent to `nextflow run nf-core/rnaseq --outdir results` completing.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/docs/output',
+    realToolExamples: ['publishDir (Nextflow directive)', 'nf-core/rnaseq --outdir'],
   }),
 
   run_profile: B({
     type: 'run_profile',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'command_generation',
     displayName: 'Run Profile',
-    technicalConcept: '-profile flag / execution environment',
-    description: "This tells the pipeline where and how to run — using Docker, Singularity, Conda, or a test environment.",
-    technicalDetail: 'The -profile flag selects a configuration profile. nf-core pipelines ship with docker, singularity, conda, and test profiles out of the box.',
+    technicalConcept: '`-profile` flag — nf-core/rnaseq execution environment',
+    description: "Selects where and how the pipeline runs. nf-core pipelines ship with `docker`, `singularity`, `conda`, and `test` profiles.",
+    technicalDetail:
+      'nf-core pipelines define profiles in `nextflow.config`. The `-profile docker` flag tells Nextflow to ' +
+      'pull and use container images for every process. `-profile test` runs the pipeline with a tiny built-in ' +
+      'test dataset to verify setup. Profiles can be combined: `-profile test,docker`. ' +
+      'On HPC clusters, institutional profiles (e.g. `-profile uppmax`) configure SLURM/PBS settings.',
     category: 'pipeline', icon: '⚙️',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake: 'Not selecting a profile. Without one, Nextflow may fail to find Docker or Conda.',
-    exampleOutput: 'A profile configuration passed to all pipeline steps.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+    commonMistake: 'Running without a container profile on a system without local tool installations. Always use `-profile docker` or `-profile singularity` on nf-core pipelines.',
+    exampleOutput: 'Profile appended to the generated `nextflow run nf-core/rnaseq -profile docker` command.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/running/configuration',
+    realToolExamples: ['-profile docker', '-profile singularity', '-profile test', 'nf-core/configs'],
   }),
 
   parameter_setting: B({
     type: 'parameter_setting',
     pack: 'rnaseq_qc', status: 'available', executionMode: 'command_generation',
     displayName: 'Parameter Setting',
-    technicalConcept: 'params / nextflow_schema.json concept',
-    description: "This is a setting that changes how the pipeline behaves — like choosing a genome or setting a thread count.",
-    technicalDetail: 'nf-core pipelines use nextflow_schema.json to define and validate parameters. Params are passed as --param_name value on the command line.',
+    technicalConcept: '`params` / `nextflow_schema.json` — nf-core/rnaseq parameters',
+    description: "A setting that changes how nf-core/rnaseq behaves — like choosing a reference genome or turning off a step.",
+    technicalDetail:
+      'nf-core pipelines define all parameters in `nextflow_schema.json`, which drives both ' +
+      'CLI validation and the nf-core launch GUI. Common nf-core/rnaseq params: ' +
+      '`--genome GRCh38`, `--aligner star_salmon`, `--skip_trimming`, `--skip_multiqc`. ' +
+      'Parameters are passed as `--param value` flags in the `nextflow run` command.',
     category: 'pipeline', icon: '🔧',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake: 'Confusing parameters with profiles. Params change analysis settings; profiles change the compute environment.',
-    exampleOutput: 'A parameter value added to the generated nextflow run command.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+    commonMistake: 'Confusing `--genome` (a param) with `-profile` (an execution environment). They are different flags.',
+    exampleOutput: 'Parameter appended to the generated `nextflow run nf-core/rnaseq --genome GRCh38` command.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/parameters',
+    realToolExamples: ['nextflow_schema.json', 'nf-core launch', 'nf-core/rnaseq --genome'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -249,582 +305,736 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
     type: 'paired_validator',
     pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
     displayName: 'Paired-end Validator',
-    technicalConcept: 'Paired-end read file validation',
-    description: 'Checks that every sample has matching R1 and R2 files before the pipeline starts.',
-    technicalDetail: 'Paired-end sequencing produces two files per sample (R1 forward, R2 reverse). Many tools require both files and will fail silently if one is missing or mismatched.',
+    technicalConcept: '`SAMPLESHEET_CHECK` subworkflow / nf-validation — all nf-core pipelines',
+    description: 'Checks that every sample in the nf-core samplesheet has matching R1 and R2 files before the pipeline starts.',
+    technicalDetail:
+      'Every nf-core pipeline that accepts FASTQ input validates its samplesheet using the `SAMPLESHEET_CHECK` subworkflow ' +
+      'or the `nf-validation` plugin. It checks for required columns, valid file extensions, and consistent ' +
+      'paired-end/single-end flags. Errors are reported before any compute resources are consumed.',
     category: 'data', icon: '🔗',
     inputPorts: [{ id: 'in-samples', label: 'Sample records', dataType: 'sample_records' }],
     outputPorts: [{ id: 'out-samples', label: 'Validated samples', dataType: 'sample_records' }],
-    commonMistake: 'Assuming single-end data is paired. Always check whether your sequencing library is single or paired-end.',
-    exampleOutput: 'A validation report listing which samples passed or failed the pairing check.',
-    realToolExamples: ['nf-core samplesheet check'],
+    commonMistake: 'Mixing single-end and paired-end rows in the same samplesheet without the correct `single_end` column value.',
+    exampleOutput: 'Validated sample channel — equivalent to `SAMPLESHEET_CHECK` passing with exit code 0.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/running/run-pipelines',
+    realToolExamples: ['SAMPLESHEET_CHECK (nf-core subworkflow)', 'nf-validation plugin', '`nf-core schema validate`'],
   }),
 
   adapter_detector: B({
     type: 'adapter_detector',
     pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
     displayName: 'Adapter Detector',
-    technicalConcept: 'Adapter contamination detection',
-    description: 'Scans reads to identify and flag sequencing adapter sequences before trimming.',
-    technicalDetail: 'Adapter sequences are short DNA fragments added during library preparation. They must be detected and removed before alignment; tools like fastp and FastQC can identify them automatically.',
+    technicalConcept: '`FASTQC` adapter report / `FASTP` auto-detection — nf-core/rnaseq',
+    description: 'Detects sequencing adapter sequences in raw reads. nf-core/rnaseq uses FASTQC and TrimGalore for this.',
+    technicalDetail:
+      'The `FASTQC` module reports adapter contamination in its HTML output under the "Adapter Content" section. ' +
+      'The `FASTP` and `TRIMGALORE` nf-core modules can auto-detect and remove adapters without requiring the ' +
+      'adapter sequence to be specified manually. Detected adapters are summarised in the MULTIQC report.',
     category: 'analysis', icon: '🔎',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-reads', label: 'Flagged reads', dataType: 'fastq_reads' }],
-    commonMistake: 'Skipping adapter detection and going straight to alignment. Adapter contamination causes misaligned reads and unreliable results.',
-    exampleOutput: 'A report showing which adapter sequences were detected and at what frequency.',
-    realToolExamples: ['FastQC', 'fastp', 'AdapterRemoval'],
+    commonMistake: 'Skipping adapter removal. nf-core/rnaseq runs TrimGalore by default — do not disable it without a good reason.',
+    exampleOutput: 'FASTQC adapter contamination report and auto-trimmed FASTQ files.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/fastqc',
+    realToolExamples: ['FASTQC (nf-core/modules)', 'FASTP (nf-core/modules)', 'TRIMGALORE (nf-core/modules)'],
   }),
 
   read_length_checker: B({
     type: 'read_length_checker',
     pack: 'fastq_basics', status: 'available', executionMode: 'simulated',
     displayName: 'Read Length Checker',
-    technicalConcept: 'Read length distribution QC metric',
-    description: 'Checks that all reads have the expected length and flags unusual distributions.',
-    technicalDetail: 'Modern Illumina short-read sequencing produces fixed-length reads (e.g. 150bp). Variable read lengths may indicate quality trimming issues or mixed library types.',
+    technicalConcept: '`FASTQC` sequence length distribution — nf-core module QC metric',
+    description: 'Verifies that all reads have the expected length. The FASTQC nf-core module reports this automatically.',
+    technicalDetail:
+      'The `FASTQC` nf-core module generates a "Sequence Length Distribution" section in its report. ' +
+      'nf-core/rnaseq aggregates this per-sample metric in the MULTIQC summary. ' +
+      'Variable read lengths after trimming are normal; before trimming they may indicate a library prep problem.',
     category: 'analysis', icon: '📏',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-qc', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Ignoring unexpected read length variation. It often signals a problem with library preparation.',
-    exampleOutput: 'A histogram of read lengths across all samples.',
-    realToolExamples: ['FastQC', 'seqkit'],
+    commonMistake: 'Treating variable post-trim lengths as an error. TrimGalore produces variable lengths by design.',
+    exampleOutput: 'Read length histogram in the FASTQC HTML report — aggregated by MULTIQC.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/fastqc',
+    realToolExamples: ['FASTQC (nf-core/modules)', 'MULTIQC (nf-core/modules)'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
   // PACK: RNA-seq Full Pipeline  (Phase 1 — coming soon)
   // ════════════════════════════════════════════════════════════════════════════
 
+  // ════════════════════════════════════════════════════════════════════════════
+  // PACK: nf-core/rnaseq Full  (Phase 1 — coming soon)
+  // ════════════════════════════════════════════════════════════════════════════
+
   genome_index: B({
     type: 'genome_index',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Genome Index',
-    technicalConcept: 'Genome indexing step / STAR or HISAT2 index',
-    description: 'Builds a searchable index of the reference genome so reads can be aligned quickly.',
-    technicalDetail: 'Aligners like STAR and HISAT2 require a pre-built index of the reference genome. Indexing is computationally expensive but done once per genome/annotation combination.',
+    technicalConcept: '`STAR_GENOMEGENERATE` or `HISAT2_BUILD` nf-core module — nf-core/rnaseq',
+    description: 'Builds a searchable index of the reference genome. nf-core/rnaseq runs this step automatically when you specify `--genome`.',
+    technicalDetail:
+      'nf-core/rnaseq calls `STAR_GENOMEGENERATE` (from nf-core/modules) or `HISAT2_BUILD` depending on `--aligner`. ' +
+      'When using `--genome GRCh38`, nf-core/rnaseq downloads the FASTA and GTF from AWS iGenomes and builds the index automatically. ' +
+      'The index is cached in `--igenomes_base` for reuse across runs.',
     category: 'data', icon: '📚',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-context', label: 'Indexed genome', dataType: 'pipeline_context' }],
-    commonMistake: 'Using an index built from a different genome version than the annotation file.',
-    exampleOutput: 'A folder of index files ready for alignment.',
-    realToolExamples: ['STAR', 'HISAT2', 'Bowtie2'],
+    commonMistake: 'Building an index from a FASTA file that does not match the GTF annotation version.',
+    exampleOutput: 'STAR genome directory or HISAT2 index files cached for downstream alignment.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/parameters#genome',
+    realToolExamples: ['STAR_GENOMEGENERATE (nf-core/modules)', 'HISAT2_BUILD (nf-core/modules)', 'nf-core/rnaseq --genome GRCh38'],
   }),
 
   read_aligner: B({
     type: 'read_aligner',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Read Aligner',
-    technicalConcept: 'Read alignment process / STAR or HISAT2 module',
-    description: 'Maps your sequencing reads to the reference genome to find where each read came from.',
-    technicalDetail: 'RNA-seq aligners like STAR and HISAT2 are splice-aware — they can map reads that span exon-exon junctions in mRNA. Output is a BAM file containing aligned reads.',
+    technicalConcept: '`STAR_ALIGN` or `HISAT2_ALIGN` nf-core module — nf-core/rnaseq',
+    description: 'Maps trimmed reads to the reference genome. nf-core/rnaseq uses STAR + Salmon by default.',
+    technicalDetail:
+      'nf-core/rnaseq runs `STAR_ALIGN` (nf-core/modules) in alignment mode, then quantifies with `SALMON_QUANT`. ' +
+      'Setting `--aligner hisat2` switches to `HISAT2_ALIGN`. ' +
+      'The splice-aware aligner handles exon-exon junction reads produced by RNA splicing. ' +
+      'Output BAMs are published to `results/star_salmon/` by default.',
     category: 'analysis', icon: '🎯',
-    inputPorts: [
-      { id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' },
-    ],
+    inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-bam', label: 'Aligned reads', dataType: 'qc_output' }],
-    commonMistake: 'Using a DNA aligner (like BWA) for RNA-seq data. RNA-seq requires a splice-aware aligner.',
-    exampleOutput: 'A BAM file with millions of reads mapped to genome coordinates.',
-    realToolExamples: ['STAR', 'HISAT2', 'SALMON'],
+    commonMistake: 'Using `--aligner star_salmon` (default) on a non-model organism without a Salmon decoy genome.',
+    exampleOutput: 'Coordinate-sorted BAMs in `results/star_salmon/` and Salmon quant directories.',
+    nfCoreDocsLink: 'https://nf-co.re/rnaseq/parameters#aligner',
+    realToolExamples: ['STAR_ALIGN (nf-core/modules)', 'SALMON_QUANT (nf-core/modules)', 'HISAT2_ALIGN (nf-core/modules)'],
   }),
 
   bam_sorter: B({
     type: 'bam_sorter',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'BAM Sorter',
-    technicalConcept: 'SAMtools sort — coordinate-sorted BAM',
-    description: 'Sorts the aligned reads by their position in the genome, which most tools require.',
-    technicalDetail: 'BAM files from aligners are often in name order. Most downstream tools require coordinate-sorted BAMs. SAMtools sort reorders reads by chromosome and position.',
+    technicalConcept: '`SAMTOOLS_SORT` nf-core module — BAM_SORT_STATS_SAMTOOLS subworkflow',
+    description: 'Sorts aligned reads by genome position. nf-core/rnaseq does this inside its `BAM_SORT_STATS_SAMTOOLS` subworkflow.',
+    technicalDetail:
+      'nf-core/rnaseq calls the `BAM_SORT_STATS_SAMTOOLS` subworkflow after alignment, which runs ' +
+      '`SAMTOOLS_SORT`, `SAMTOOLS_INDEX`, and `SAMTOOLS_STATS` in sequence. ' +
+      'All three are nf-core/modules wrappers. The subworkflow is reused across multiple nf-core pipelines.',
     category: 'analysis', icon: '🗂️',
     inputPorts: [{ id: 'in-bam', label: 'Aligned reads', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-bam', label: 'Sorted BAM', dataType: 'qc_output' }],
-    commonMistake: 'Forgetting to sort before indexing. BAM indexing requires coordinate-sorted files.',
-    exampleOutput: 'A coordinate-sorted BAM file.',
-    realToolExamples: ['SAMtools sort'],
+    commonMistake: 'Running SAMTOOLS_INDEX before SAMTOOLS_SORT. Coordinate sorting must come first.',
+    exampleOutput: 'Coordinate-sorted BAMs and flagstat reports published to `results/star_salmon/`.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/samtools/sort',
+    realToolExamples: ['SAMTOOLS_SORT (nf-core/modules)', 'BAM_SORT_STATS_SAMTOOLS (nf-core subworkflow)'],
   }),
 
   bam_indexer: B({
     type: 'bam_indexer',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'BAM Indexer',
-    technicalConcept: 'SAMtools index — .bai index file',
-    description: 'Creates an index file alongside your BAM file so genome browsers can read it quickly.',
-    technicalDetail: 'BAM index (.bai) files allow random access to reads at specific genomic coordinates without reading the whole file. Required by IGV, genome browsers, and variant callers.',
+    technicalConcept: '`SAMTOOLS_INDEX` nf-core module — BAM_SORT_STATS_SAMTOOLS subworkflow',
+    description: 'Creates a .bai index alongside the BAM so genome browsers and downstream tools can access it efficiently.',
+    technicalDetail:
+      'The `SAMTOOLS_INDEX` nf-core module generates a `.bai` index file for coordinate-sorted BAMs. ' +
+      'It runs as part of the `BAM_SORT_STATS_SAMTOOLS` subworkflow in nf-core/rnaseq. ' +
+      'The index enables random access by genomic region without scanning the entire file.',
     category: 'analysis', icon: '🏷️',
     inputPorts: [{ id: 'in-bam', label: 'Sorted BAM', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-bam', label: 'Indexed BAM', dataType: 'qc_output' }],
-    commonMistake: 'Running this before BAM Sorter. The input must be coordinate-sorted.',
-    exampleOutput: 'A .bai index file alongside the sorted BAM.',
-    realToolExamples: ['SAMtools index'],
+    commonMistake: 'Trying to index an unsorted BAM. SAMTOOLS_INDEX requires coordinate-sorted input.',
+    exampleOutput: 'A `.bai` index file alongside each sorted BAM.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/samtools/index',
+    realToolExamples: ['SAMTOOLS_INDEX (nf-core/modules)', 'BAM_SORT_STATS_SAMTOOLS (nf-core subworkflow)'],
   }),
 
   feature_counter: B({
     type: 'feature_counter',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Feature Counter',
-    technicalConcept: 'Read counting per gene / featureCounts or HTSeq',
-    description: 'Counts how many reads overlap each gene — this is the raw data for expression analysis.',
-    technicalDetail: 'Feature counting assigns aligned reads to genomic features (genes, exons) using a GTF annotation file. The output is a count matrix used for differential expression analysis.',
+    technicalConcept: '`SALMON_QUANT` or `SUBREAD_FEATURECOUNTS` nf-core module — nf-core/rnaseq',
+    description: 'Counts how many reads came from each gene. nf-core/rnaseq does this with Salmon quantification.',
+    technicalDetail:
+      'nf-core/rnaseq uses `SALMON_QUANT` (nf-core/modules) to quantify gene expression from STAR alignments. ' +
+      'When using `--aligner hisat2`, it uses `SUBREAD_FEATURECOUNTS` instead. ' +
+      'Counts are collated by `TXIMETA_TXIMPORT` into a gene-level count matrix used by nf-core/differentialabundance.',
     category: 'analysis', icon: '🔢',
     inputPorts: [{ id: 'in-bam', label: 'Indexed BAM', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-counts', label: 'Count matrix', dataType: 'report_data' }],
-    commonMistake: 'Using the wrong strandedness setting. Mismatched strandedness can reduce usable reads by 50% or more.',
-    exampleOutput: 'A matrix of read counts per gene per sample.',
-    realToolExamples: ['featureCounts', 'HTSeq', 'SALMON'],
+    commonMistake: 'Choosing the wrong strandedness. nf-core/rnaseq auto-detects strandedness via `RSeQC` — do not override unless you are certain.',
+    exampleOutput: 'Gene-level count matrices published to `results/star_salmon/` for downstream DE analysis.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/salmon/quant',
+    realToolExamples: ['SALMON_QUANT (nf-core/modules)', 'SUBREAD_FEATURECOUNTS (nf-core/modules)', 'TXIMETA_TXIMPORT'],
   }),
 
   deseq2: B({
     type: 'deseq2',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'DESeq2 Analysis',
-    technicalConcept: 'Differential expression analysis / DESeq2 R package',
-    description: 'Finds which genes are expressed differently between your sample groups.',
-    technicalDetail: 'DESeq2 uses a negative binomial model to identify statistically significant changes in gene expression between conditions. Output includes fold changes, p-values, and adjusted p-values.',
+    technicalConcept: '`DESEQ2_DIFFERENTIAL` nf-core module — nf-core/differentialabundance',
+    description: 'Identifies genes expressed differently between sample groups. nf-core/differentialabundance wraps DESeq2 as a reusable nf-core module.',
+    technicalDetail:
+      'The `DESEQ2_DIFFERENTIAL` module (nf-core/modules) runs DESeq2 on the count matrix produced by nf-core/rnaseq. ' +
+      'It is used by the standalone nf-core/differentialabundance pipeline, which accepts count matrices from nf-core/rnaseq directly. ' +
+      'Output includes normalised counts, fold-change tables, and PCA plots.',
     category: 'analysis', icon: '📈',
     inputPorts: [{ id: 'in-counts', label: 'Count matrix', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-de', label: 'DE results', dataType: 'report_data' }],
-    commonMistake: 'Running DE with fewer than 3 replicates per group. Statistical power is very low with small n.',
-    exampleOutput: 'A table of differentially expressed genes with log2 fold changes and adjusted p-values.',
-    realToolExamples: ['DESeq2', 'edgeR', 'limma'],
+    commonMistake: 'Running nf-core/rnaseq and nf-core/differentialabundance with different genome versions.',
+    exampleOutput: 'Fold-change tables and normalised count matrices in `results/deseq2_differential/`.',
+    nfCoreDocsLink: 'https://nf-co.re/differentialabundance',
+    realToolExamples: ['DESEQ2_DIFFERENTIAL (nf-core/modules)', 'nf-core/differentialabundance'],
   }),
 
   volcano_plot: B({
     type: 'volcano_plot',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Volcano Plot',
-    technicalConcept: 'DE results visualization / ggplot2 concept',
-    description: 'Creates a volcano plot showing which genes are significantly up- or down-regulated.',
-    technicalDetail: 'Volcano plots display -log10(adjusted p-value) vs log2(fold change) for all tested genes. Significantly DE genes cluster at the top left and right.',
+    technicalConcept: '`CUSTOM_VOLCANOPLOT` nf-core module — nf-core/differentialabundance',
+    description: 'Visualises differential expression results as a volcano plot. Part of the nf-core/differentialabundance output.',
+    technicalDetail:
+      'The `CUSTOM_VOLCANOPLOT` nf-core module generates an interactive volcano plot from DESeq2 results. ' +
+      'It is part of the nf-core/differentialabundance pipeline\'s reporting step, alongside PCA plots and heatmaps. ' +
+      'Output is published to `results/plots/` as PNG and interactive HTML.',
     category: 'output', icon: '🌋',
     inputPorts: [{ id: 'in-de', label: 'DE results', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-plot', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Not setting an appropriate fold-change cutoff alongside the FDR threshold.',
-    exampleOutput: 'A volcano plot image highlighting up- and down-regulated genes.',
-    realToolExamples: ['ggplot2', 'EnhancedVolcano'],
+    commonMistake: 'Interpreting the volcano plot before checking PCA — batch effects cause misleading volcano patterns.',
+    exampleOutput: 'Interactive HTML volcano plot in `results/plots/` from nf-core/differentialabundance.',
+    nfCoreDocsLink: 'https://nf-co.re/differentialabundance/docs/output',
+    realToolExamples: ['CUSTOM_VOLCANOPLOT (nf-core/modules)', 'nf-core/differentialabundance'],
   }),
 
   pathway_analysis: B({
     type: 'pathway_analysis',
     pack: 'rnaseq_full', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Pathway Analysis',
-    technicalConcept: 'Gene set enrichment / GO and KEGG analysis',
-    description: 'Finds which biological pathways are enriched in your differentially expressed genes.',
-    technicalDetail: 'Gene set enrichment analysis (GSEA) and over-representation analysis (ORA) test whether a set of DE genes is enriched in known biological pathways (GO, KEGG, Reactome).',
+    technicalConcept: '`GPROFILER2_GOST` nf-core module — nf-core/differentialabundance',
+    description: 'Finds enriched biological pathways in DE gene lists. nf-core/differentialabundance includes g:Profiler enrichment.',
+    technicalDetail:
+      'The `GPROFILER2_GOST` nf-core module runs gene set enrichment using the g:Profiler2 R package. ' +
+      'It is part of nf-core/differentialabundance\'s reporting workflow and tests against GO, KEGG, and Reactome databases. ' +
+      'Results are combined with the DESeq2 output in the final MultiQC report.',
     category: 'output', icon: '🗺️',
     inputPorts: [{ id: 'in-de', label: 'DE results', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-pathways', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Interpreting pathway p-values without considering background gene list selection.',
-    exampleOutput: 'A table and dot plot of enriched GO/KEGG terms with FDR-corrected p-values.',
-    realToolExamples: ['clusterProfiler', 'fgsea', 'g:Profiler'],
+    commonMistake: 'Running pathway analysis on a list with fewer than 10 genes. Results will be unreliable.',
+    exampleOutput: 'Enrichment tables and dot plots from g:Profiler, published to `results/gprofiler2/`.',
+    nfCoreDocsLink: 'https://nf-co.re/differentialabundance/docs/output',
+    realToolExamples: ['GPROFILER2_GOST (nf-core/modules)', 'nf-core/differentialabundance'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
-  // PACK: Variant Calling  (Phase 2 — coming soon)
+  // PACK: nf-core/sarek  (Phase 2 — coming soon)
   // ════════════════════════════════════════════════════════════════════════════
 
   reference_genome: B({
     type: 'reference_genome',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Reference Genome',
-    technicalConcept: 'Reference FASTA / genome assembly',
-    description: 'The reference sequence every read is compared against to find differences.',
-    technicalDetail: 'Variant calling requires a reference genome FASTA file. The choice of reference (GRCh38, GRCh37, etc.) must match the annotation and downstream databases.',
+    technicalConcept: '`--genome` parameter / AWS iGenomes — nf-core/sarek',
+    description: 'The reference FASTA that every read is compared against. nf-core/sarek downloads it from iGenomes when you pass `--genome GATK.GRCh38`.',
+    technicalDetail:
+      'nf-core/sarek uses `--genome GATK.GRCh38` (or GRCh37) to download and index the reference from the GATK resource bundle via AWS iGenomes. ' +
+      'The reference is indexed automatically for BWA-MEM2, GATK, and other tools. ' +
+      'All known variant VCFs (dbSNP, gnomAD) are also downloaded and passed to GATK modules.',
     category: 'data', icon: '🗺️',
     inputPorts: [],
     outputPorts: [{ id: 'out-ref', label: 'Reference data', dataType: 'pipeline_context' }],
-    commonMistake: 'Mixing reference genome versions between pipeline steps.',
-    exampleOutput: 'A reference FASTA and its BWA/GATK index files.',
-    realToolExamples: ['GATK', 'BWA'],
+    commonMistake: 'Mixing GRCh37 and GRCh38 resources. nf-core/sarek must use consistent reference versions across all GATK steps.',
+    exampleOutput: 'Reference FASTA, BWA-MEM2 index, and known-sites VCFs downloaded and ready for nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/sarek/parameters#genome',
+    realToolExamples: ['nf-core/sarek --genome GATK.GRCh38', 'AWS iGenomes', 'GATK resource bundle'],
   }),
 
   bwa_aligner: B({
     type: 'bwa_aligner',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
-    displayName: 'BWA Aligner',
-    technicalConcept: 'DNA read alignment / BWA-MEM2 module',
-    description: 'Aligns your DNA reads to the reference genome. BWA is the standard for variant calling.',
-    technicalDetail: 'BWA-MEM2 aligns short DNA reads to a reference genome. Unlike RNA-seq aligners, it does not need to be splice-aware. Output is a SAM/BAM file.',
+    displayName: 'BWA-MEM2 Align',
+    technicalConcept: '`BWAMEM2_MEM` nf-core module — nf-core/sarek alignment step',
+    description: 'Aligns DNA reads to the reference genome. nf-core/sarek uses BWA-MEM2 by default for germline calling.',
+    technicalDetail:
+      'nf-core/sarek calls `BWAMEM2_MEM` (nf-core/modules) inside the `FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON` subworkflow. ' +
+      'BWA-MEM2 is an optimised version of BWA-MEM with 2× faster alignment on modern CPUs. ' +
+      'Setting `--aligner dragmap` switches to the DRAGMap aligner for Illumina DRAGEN-compatible results.',
     category: 'analysis', icon: '🔍',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-bam', label: 'Aligned reads', dataType: 'qc_output' }],
-    commonMistake: 'Using STAR or HISAT2 (RNA-seq aligners) for DNA variant calling.',
-    exampleOutput: 'A BAM file with DNA reads aligned to the reference.',
-    realToolExamples: ['BWA-MEM2', 'Bowtie2'],
+    commonMistake: 'Using STAR or HISAT2 for DNA variant calling. nf-core/sarek requires BWA-MEM2 or DRAGMap — not splice-aware aligners.',
+    exampleOutput: 'Aligned BAMs in `results/preprocessing/` from nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/sarek/parameters#aligner',
+    realToolExamples: ['BWAMEM2_MEM (nf-core/modules)', 'nf-core/sarek --aligner bwa-mem2'],
   }),
 
   mark_duplicates: B({
     type: 'mark_duplicates',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Mark Duplicates',
-    technicalConcept: 'PCR duplicate removal / Picard MarkDuplicates',
-    description: 'Flags reads that are PCR copies of each other so variant callers can ignore them.',
-    technicalDetail: 'Library amplification creates duplicate reads from the same DNA molecule. These duplicates can inflate variant allele frequencies. Picard MarkDuplicates identifies and flags them by comparing read positions.',
+    technicalConcept: '`GATK4_MARKDUPLICATES` nf-core module — nf-core/sarek preprocessing',
+    description: 'Flags PCR duplicate reads so GATK variant callers can ignore them. nf-core/sarek runs this step automatically.',
+    technicalDetail:
+      'nf-core/sarek calls `GATK4_MARKDUPLICATES` (nf-core/modules) in the `MARKDUPLICATES` subworkflow. ' +
+      'Duplicates are flagged (not removed) by default. Metrics are collected and summarised in the MULTIQC report. ' +
+      'nf-core/sarek then merges multi-lane BAMs before this step.',
     category: 'analysis', icon: '👥',
     inputPorts: [{ id: 'in-bam', label: 'Aligned reads', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-bam', label: 'Deduped BAM', dataType: 'qc_output' }],
-    commonMistake: 'Running this step on amplicon sequencing data where all reads are intentional duplicates.',
-    exampleOutput: 'A BAM with duplicate reads flagged and a duplication rate metric.',
-    realToolExamples: ['Picard MarkDuplicates', 'GATK MarkDuplicatesSpark', 'samblaster'],
+    commonMistake: 'Skipping this step on amplicon panels. nf-core/sarek has `--skip_markduplicates` for targeted panels.',
+    exampleOutput: 'Duplicate-marked BAMs and duplication metrics in `results/preprocessing/`.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/gatk4/markduplicates',
+    realToolExamples: ['GATK4_MARKDUPLICATES (nf-core/modules)', 'nf-core/sarek preprocessing'],
   }),
 
   base_recalibrator: B({
     type: 'base_recalibrator',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Base Recalibrator',
-    technicalConcept: 'Base quality score recalibration / GATK BQSR',
-    description: 'Corrects systematic errors in the quality scores assigned to each base by the sequencer.',
-    technicalDetail: 'GATK BQSR (Base Quality Score Recalibration) uses known variant sites to model and correct sequencer quality score errors, improving variant calling accuracy.',
+    technicalConcept: '`GATK4_BASERECALIBRATOR` + `GATK4_APPLYBQSR` nf-core modules — nf-core/sarek BQSR',
+    description: 'Corrects systematic base quality errors using known variant sites. A required GATK best-practices step in nf-core/sarek.',
+    technicalDetail:
+      'nf-core/sarek calls `GATK4_BASERECALIBRATOR` then `GATK4_APPLYBQSR` (both nf-core/modules) to implement GATK BQSR. ' +
+      'Known variant sites (dbSNP, Mills indels) are provided automatically from the iGenomes reference bundle. ' +
+      'The recalibrated BAMs are what gets passed to HaplotypeCaller.',
     category: 'analysis', icon: '🎚️',
     inputPorts: [{ id: 'in-bam', label: 'Deduped BAM', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-bam', label: 'Recalibrated BAM', dataType: 'qc_output' }],
-    commonMistake: 'Skipping BQSR for non-model organisms where known variant databases are unavailable.',
-    exampleOutput: 'A BAM with recalibrated base quality scores.',
-    realToolExamples: ['GATK BaseRecalibrator', 'ApplyBQSR'],
+    commonMistake: 'Using BQSR on a non-model organism without known variant databases. Use `--skip_bqsr` in that case.',
+    exampleOutput: 'Recalibrated BAMs in `results/preprocessing/` ready for HaplotypeCaller.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/gatk4/baserecalibrator',
+    realToolExamples: ['GATK4_BASERECALIBRATOR (nf-core/modules)', 'GATK4_APPLYBQSR (nf-core/modules)'],
   }),
 
   variant_caller: B({
     type: 'variant_caller',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Variant Caller',
-    technicalConcept: 'SNP/INDEL calling / GATK HaplotypeCaller',
-    description: 'Finds places where your sample differs from the reference genome.',
-    technicalDetail: 'GATK HaplotypeCaller locally reassembles reads around candidate variants and uses a probabilistic model to call SNPs and INDELs. Output is a GVCF or VCF file.',
+    technicalConcept: '`GATK4_HAPLOTYPECALLER` nf-core module — nf-core/sarek variant calling',
+    description: 'Identifies SNPs and INDELs in your sample. nf-core/sarek calls HaplotypeCaller in GVCF mode for joint genotyping.',
+    technicalDetail:
+      'nf-core/sarek calls `GATK4_HAPLOTYPECALLER` (nf-core/modules) in GVCF mode by default for germline calling. ' +
+      'The tool can be switched to other callers (`--tools deepvariant`, `--tools strelka`) via the `--tools` parameter. ' +
+      'For somatic calling, nf-core/sarek uses `GATK4_MUTECT2` with a matched normal sample.',
     category: 'analysis', icon: '🧫',
     inputPorts: [{ id: 'in-bam', label: 'Recalibrated BAM', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-vcf', label: 'Variant calls', dataType: 'report_data' }],
-    commonMistake: 'Using germline variant calling tools for somatic (tumour/normal) analysis without the right mode.',
-    exampleOutput: 'A VCF file listing all detected variants with genotypes and quality scores.',
-    realToolExamples: ['GATK HaplotypeCaller', 'DeepVariant', 'Strelka2'],
+    commonMistake: 'Using `--tools haplotypecaller` for somatic tumour/normal calling. Use `--tools mutect2` instead.',
+    exampleOutput: 'GVCFs in `results/variant_calling/haplotypecaller/` from nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/sarek/parameters#tools',
+    realToolExamples: ['GATK4_HAPLOTYPECALLER (nf-core/modules)', 'nf-core/sarek --tools haplotypecaller'],
   }),
 
   genotype_gvcf: B({
     type: 'genotype_gvcf',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Genotype GVCFs',
-    technicalConcept: 'Joint genotyping / GATK GenotypeGVCFs',
-    description: 'Combines individual sample GVCFs into a final multi-sample VCF for cohort analysis.',
-    technicalDetail: 'In the GATK best-practices joint calling workflow, each sample is first processed with HaplotypeCaller in GVCF mode. GenotypeGVCFs then performs joint genotyping across all samples.',
+    technicalConcept: '`GATK4_GENOTYPEGVCFS` nf-core module — nf-core/sarek joint genotyping',
+    description: 'Merges per-sample GVCFs into a multi-sample VCF. nf-core/sarek does this automatically when multiple samples are provided.',
+    technicalDetail:
+      'nf-core/sarek calls `GATK4_GENOTYPEGVCFS` (nf-core/modules) after HaplotypeCaller to perform joint genotyping. ' +
+      'For large cohorts, `GATK4_GENOMICSDBIMPORT` is used first to consolidate GVCFs before genotyping. ' +
+      'Joint genotyping improves variant calling accuracy by using population-level information.',
     category: 'analysis', icon: '🔀',
     inputPorts: [{ id: 'in-gvcf', label: 'Variant calls', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-vcf', label: 'Joint VCF', dataType: 'report_data' }],
-    commonMistake: 'Calling variants per-sample without joint genotyping when working with a cohort.',
-    exampleOutput: 'A multi-sample VCF with genotypes for all individuals.',
-    realToolExamples: ['GATK GenotypeGVCFs', 'GLnexus'],
+    commonMistake: 'Running per-sample VCF calling instead of joint genotyping for cohort studies.',
+    exampleOutput: 'Multi-sample genotyped VCFs in `results/variant_calling/` from nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/gatk4/genotypegvcfs',
+    realToolExamples: ['GATK4_GENOTYPEGVCFS (nf-core/modules)', 'GATK4_GENOMICSDBIMPORT (nf-core/modules)'],
   }),
 
   variant_filter: B({
     type: 'variant_filter',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Variant Filter',
-    technicalConcept: 'Variant quality filtering / VQSR or hard filters',
-    description: 'Removes low-quality or artefactual variants from your VCF.',
-    technicalDetail: 'GATK VQSR uses a machine-learning model trained on known variant sites to score and filter variants. For smaller datasets, hard filters based on quality metrics are applied instead.',
+    technicalConcept: '`GATK4_VARIANTRECALIBRATOR` or `GATK4_VARIANTFILTRATION` — nf-core/sarek',
+    description: 'Removes low-quality variant calls. nf-core/sarek applies VQSR for large datasets or hard filters for small ones.',
+    technicalDetail:
+      'nf-core/sarek automatically selects between `GATK4_VARIANTRECALIBRATOR` (VQSR, for WGS/large WES) ' +
+      'and `GATK4_VARIANTFILTRATION` (hard filters, for targeted panels or small datasets). ' +
+      'Both are nf-core/modules wrappers following the GATK best-practices variant filtering guidelines.',
     category: 'analysis', icon: '🪄',
     inputPorts: [{ id: 'in-vcf', label: 'Joint VCF', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-vcf', label: 'Filtered VCF', dataType: 'report_data' }],
-    commonMistake: 'Applying VQSR with too few variants. VQSR requires sufficient training data to be reliable.',
-    exampleOutput: 'A filtered VCF with PASS/FAIL flags on each variant.',
-    realToolExamples: ['GATK VQSR', 'BCFtools filter'],
+    commonMistake: 'Applying VQSR on a targeted panel with too few variants — use hard filters via `--skip_vqsr` instead.',
+    exampleOutput: 'PASS-flagged VCFs in `results/variant_calling/` from nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/gatk4/variantrecalibrator',
+    realToolExamples: ['GATK4_VARIANTRECALIBRATOR (nf-core/modules)', 'GATK4_VARIANTFILTRATION (nf-core/modules)'],
   }),
 
   vcf_annotator: B({
     type: 'vcf_annotator',
     pack: 'variant_calling', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'VCF Annotator',
-    technicalConcept: 'Variant annotation / VEP or ANNOVAR',
-    description: 'Adds biological meaning to each variant — which gene it affects and what it might do.',
-    technicalDetail: 'Variant Effect Predictor (VEP) annotates each variant with gene names, transcript effects, population frequencies, and predicted functional impact (SIFT, PolyPhen).',
+    technicalConcept: '`ENSEMBLVEP_VEP` or `SNPEFF_SNPEFF` nf-core module — nf-core/sarek annotation',
+    description: 'Adds gene names and predicted consequences to each variant. nf-core/sarek supports VEP and SnpEff via `--tools`.',
+    technicalDetail:
+      'nf-core/sarek calls `ENSEMBLVEP_VEP` or `SNPEFF_SNPEFF` (nf-core/modules) when `--tools vep` or `--tools snpeff` is set. ' +
+      'VEP annotates each variant with Ensembl transcript consequences, population frequencies from gnomAD, ' +
+      'and functional predictions (SIFT, PolyPhen-2, CADD). Results are merged into an annotated VCF.',
     category: 'output', icon: '🏷️',
     inputPorts: [{ id: 'in-vcf', label: 'Filtered VCF', dataType: 'report_data' }],
     outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Annotating with an outdated database. Population frequencies and consequence predictions change with database releases.',
-    exampleOutput: 'An annotated VCF with gene names, variant consequences, and population frequencies.',
-    realToolExamples: ['VEP', 'ANNOVAR', 'SnpEff'],
+    commonMistake: 'Running VEP with an outdated cache version. Always use the cache version that matches your Ensembl release.',
+    exampleOutput: 'Annotated VCFs in `results/annotation/` from nf-core/sarek.',
+    nfCoreDocsLink: 'https://nf-co.re/sarek/parameters#tools',
+    realToolExamples: ['ENSEMBLVEP_VEP (nf-core/modules)', 'SNPEFF_SNPEFF (nf-core/modules)', 'nf-core/sarek --tools vep'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
-  // PACK: Metagenomics  (Phase 2 — coming soon)
+  // PACK: nf-core/taxprofiler  (Phase 2 — coming soon)
   // ════════════════════════════════════════════════════════════════════════════
 
   host_removal: B({
     type: 'host_removal',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Host Removal',
-    technicalConcept: 'Host read decontamination / Bowtie2 host filter',
-    description: 'Removes reads that come from the host organism so only microbial reads remain.',
-    technicalDetail: 'Metagenomic samples from clinical or environmental sources contain host DNA. Host reads are removed by aligning to the host reference genome and discarding mapped reads.',
+    technicalConcept: '`BOWTIE2_ALIGN` nf-core module — nf-core/taxprofiler host decontamination',
+    description: 'Removes host reads before taxonomic classification. nf-core/taxprofiler uses Bowtie2 for this step.',
+    technicalDetail:
+      'nf-core/taxprofiler calls `BOWTIE2_ALIGN` (nf-core/modules) to align reads to the host genome (e.g. GRCh38), ' +
+      'then extracts unmapped reads as the microbial fraction. ' +
+      'Controlled by `--perform_shortread_hostremoval` and `--hostremoval_reference` parameters.',
     category: 'analysis', icon: '🧹',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
-    commonMistake: 'Skipping host removal in clinical metagenomics. Human reads can dominate a sample.',
-    exampleOutput: 'FASTQ files with human reads removed.',
-    realToolExamples: ['Bowtie2', 'KneadData'],
+    commonMistake: 'Skipping host removal in clinical samples. Human reads can exceed 90% of a clinical metagenomic sample.',
+    exampleOutput: 'Host-depleted FASTQ files published to `results/hostremoval/` in nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/taxprofiler/parameters#hostremoval',
+    realToolExamples: ['BOWTIE2_ALIGN (nf-core/modules)', 'nf-core/taxprofiler --perform_shortread_hostremoval'],
   }),
 
   kraken2: B({
     type: 'kraken2',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Kraken2 Classifier',
-    technicalConcept: 'Taxonomic classification / Kraken2 k-mer approach',
-    description: 'Identifies which organisms are present in your sample by matching reads to known genomes.',
-    technicalDetail: 'Kraken2 uses exact k-mer matches against a pre-built database of reference genomes to assign taxonomic labels to reads. It is very fast but sensitive to database completeness.',
+    technicalConcept: '`KRAKEN2_KRAKEN2` nf-core module — nf-core/taxprofiler classification',
+    description: 'Classifies reads by organism. nf-core/taxprofiler runs Kraken2 as one of several supported classifiers.',
+    technicalDetail:
+      'nf-core/taxprofiler calls `KRAKEN2_KRAKEN2` (nf-core/modules) using a pre-built database specified via `--databases`. ' +
+      'Multiple classifiers can run in parallel (Kraken2, MetaPhlAn, Bracken, DIAMOND). ' +
+      'Results are aggregated by `TAXPASTA_MERGE` into a unified taxonomy table.',
     category: 'analysis', icon: '🧫',
     inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-taxonomy', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Using a database that is too small for your environment. Novel organisms will be unclassified.',
-    exampleOutput: 'A taxonomic report listing which species are present and in what proportion.',
-    realToolExamples: ['Kraken2', 'Krakentools'],
+    commonMistake: 'Using a Kraken2 database that is too small. The Standard-8 database misses many environmental organisms.',
+    exampleOutput: 'Kraken2 classification reports and kreports published to `results/kraken2/` by nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/kraken2/kraken2',
+    realToolExamples: ['KRAKEN2_KRAKEN2 (nf-core/modules)', 'nf-core/taxprofiler --databases'],
   }),
 
   bracken: B({
     type: 'bracken',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Bracken Abundance',
-    technicalConcept: 'Bayesian abundance estimation / Bracken',
-    description: 'Estimates the relative abundance of each organism more accurately than raw read counts.',
-    technicalDetail: 'Bracken (Bayesian Reestimation of Abundance after Classification with KrakEN) re-estimates species-level abundance from Kraken2 output using a probabilistic model.',
+    technicalConcept: '`BRACKEN_BRACKEN` nf-core module — nf-core/taxprofiler abundance estimation',
+    description: 'Re-estimates species abundance from Kraken2 output. nf-core/taxprofiler runs Bracken after Kraken2 automatically.',
+    technicalDetail:
+      'nf-core/taxprofiler calls `BRACKEN_BRACKEN` (nf-core/modules) after `KRAKEN2_KRAKEN2` to compute ' +
+      'more accurate species-level abundances using a probabilistic model. ' +
+      'Controlled by `--bracken_save_intermeds`. Bracken output feeds into `TAXPASTA_MERGE` for cross-sample comparison.',
     category: 'analysis', icon: '📉',
     inputPorts: [{ id: 'in-taxonomy', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-abundance', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Using Bracken results without Kraken2 output — Bracken requires the Kraken2 report format.',
-    exampleOutput: 'Abundance estimates for each species as counts and percentages.',
-    realToolExamples: ['Bracken'],
+    commonMistake: 'Using Bracken with a database not built with the correct read length. Database and `--bracken_readlength` must match.',
+    exampleOutput: 'Bracken abundance reports merged into a multi-sample table by nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/bracken/bracken',
+    realToolExamples: ['BRACKEN_BRACKEN (nf-core/modules)', 'TAXPASTA_MERGE (nf-core/modules)'],
   }),
 
   krona_viz: B({
     type: 'krona_viz',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Krona Visualization',
-    technicalConcept: 'Interactive taxonomy visualization / KronaTools',
-    description: 'Creates an interactive sunburst chart of the microbial community composition.',
-    technicalDetail: 'KronaTools generates interactive HTML charts that allow hierarchical exploration of taxonomy results from classifiers like Kraken2, Centrifuge, or DIAMOND.',
+    technicalConcept: '`KRONA_KTIMPORTTAXONOMY` nf-core module — nf-core/taxprofiler visualisation',
+    description: 'Creates an interactive taxonomy sunburst chart. nf-core/taxprofiler generates Krona charts automatically.',
+    technicalDetail:
+      'nf-core/taxprofiler calls `KRONA_KTIMPORTTAXONOMY` (nf-core/modules) on classifier outputs to produce ' +
+      'interactive HTML Krona charts. Enabled by default — disable with `--skip_krona`. ' +
+      'Charts are published to `results/krona/` per classifier.',
     category: 'output', icon: '☀️',
     inputPorts: [{ id: 'in-abundance', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-report', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Using Krona as the primary analysis tool — it is for visualization only, not quantification.',
-    exampleOutput: 'An interactive HTML Krona chart of the sample community.',
-    realToolExamples: ['KronaTools'],
+    commonMistake: 'Using Krona for quantitative comparisons. It is a hierarchical visualisation tool, not a statistical test.',
+    exampleOutput: 'Interactive HTML Krona charts in `results/krona/` from nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/krona/ktimporttaxonomy',
+    realToolExamples: ['KRONA_KTIMPORTTAXONOMY (nf-core/modules)', 'nf-core/taxprofiler --skip_krona'],
   }),
 
   metaphlan: B({
     type: 'metaphlan',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'MetaPhlAn Profiler',
-    technicalConcept: 'Marker gene profiling / MetaPhlAn4',
-    description: 'Profiles the microbial community using clade-specific marker genes.',
-    technicalDetail: 'MetaPhlAn uses a database of clade-specific marker genes to profile microbial communities at species level with high specificity. It reports relative abundances.',
+    technicalConcept: '`METAPHLAN_METAPHLAN` nf-core module — nf-core/taxprofiler marker gene profiling',
+    description: 'Profiles microbial communities using marker genes. nf-core/taxprofiler supports MetaPhlAn alongside Kraken2.',
+    technicalDetail:
+      'nf-core/taxprofiler calls `METAPHLAN_METAPHLAN` (nf-core/modules) as an alternative or complementary classifier to Kraken2. ' +
+      'MetaPhlAn uses a database of ~5.1M clade-specific marker genes for high-specificity profiling. ' +
+      'Output profiles are harmonised with other classifiers by `TAXPASTA_MERGE`.',
     category: 'analysis', icon: '🦠',
     inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-profile', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Comparing MetaPhlAn profiles from different database versions — always use the same version.',
-    exampleOutput: 'A species abundance table for each sample.',
-    realToolExamples: ['MetaPhlAn4'],
+    commonMistake: 'Mixing MetaPhlAn database versions across samples — always use the same `mpa_vJan21_CHOCOPhlAnSGB_202103` or newer.',
+    exampleOutput: 'MetaPhlAn abundance tables in `results/metaphlan/` from nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/metaphlan/metaphlan',
+    realToolExamples: ['METAPHLAN_METAPHLAN (nf-core/modules)', 'nf-core/taxprofiler'],
   }),
 
   humann: B({
     type: 'humann',
     pack: 'metagenomics', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'HUMAnN Profiler',
-    technicalConcept: 'Functional profiling / HUMAnN3',
-    description: 'Identifies which metabolic pathways are active in your microbial community.',
-    technicalDetail: 'HUMAnN (HMP Unified Metabolic Analysis Network) maps reads to reference pangenomes and then to metabolic pathways, providing gene family and pathway abundance tables.',
+    technicalConcept: '`HUMANN_HUMANN` nf-core module — functional profiling in nf-core/taxprofiler',
+    description: 'Identifies active metabolic pathways in your microbial community using nf-core/taxprofiler\'s functional profiling step.',
+    technicalDetail:
+      'The `HUMANN_HUMANN` nf-core module runs HUMAnN3 functional profiling. ' +
+      'It maps reads to reference pangenomes (ChocoPhlAn) then to metabolic pathways (UniRef90, MetaCyc). ' +
+      'Output gene family and pathway tables can be merged across samples using `HUMANN_JOIN_TABLES`.',
     category: 'analysis', icon: '⚗️',
     inputPorts: [{ id: 'in-reads', label: 'Filtered reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-functions', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Running HUMAnN on amplicon (16S) data — it is designed for shotgun metagenomics.',
-    exampleOutput: 'Pathway abundance and gene family tables for each sample.',
-    realToolExamples: ['HUMAnN3'],
+    commonMistake: 'Running HUMAnN on amplicon (16S rRNA) data — it requires shotgun metagenomic reads.',
+    exampleOutput: 'Gene family and pathway abundance tables in `results/humann/` from nf-core/taxprofiler.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/humann/humann',
+    realToolExamples: ['HUMANN_HUMANN (nf-core/modules)', 'HUMANN_JOIN_TABLES (nf-core/modules)'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
-  // PACK: Single Cell  (Phase 2 — coming soon)
+  // PACK: nf-core/scrnaseq  (Phase 2 — coming soon)
   // ════════════════════════════════════════════════════════════════════════════
 
   cell_demux: B({
     type: 'cell_demux',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Cell Demultiplexer',
-    technicalConcept: 'Cell barcode demultiplexing / STARsolo',
-    description: 'Separates the reads from each individual cell using unique barcodes.',
-    technicalDetail: 'Single-cell sequencing libraries contain cell barcodes — short unique sequences identifying each cell. Demultiplexing assigns reads to cells based on these barcodes.',
+    technicalConcept: '`CELLRANGER_MKFASTQ` or `SIMPLEAF_QUANT` nf-core module — nf-core/scrnaseq input',
+    description: 'Assigns reads to individual cells using barcodes. nf-core/scrnaseq handles this via STARsolo, Cell Ranger, or Alevin.',
+    technicalDetail:
+      'nf-core/scrnaseq supports multiple aligners: `CELLRANGER_COUNT`, `STARSOLO`, `ALEVIN` (via `SIMPLEAF_QUANT`), and `KALLISTO_BUSTOOLS`. ' +
+      'Each demultiplexes cell barcodes and UMIs, producing a barcodes × genes count matrix. ' +
+      'The aligner is selected with `--aligner` (default: `cellranger`).',
     category: 'data', icon: '🧩',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-cells', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Using the wrong chemistry version — 10x Genomics v2 and v3 have different barcode lengths.',
-    exampleOutput: 'A cell-by-gene count matrix from demultiplexed barcodes.',
-    realToolExamples: ['Cell Ranger', 'STARsolo', 'kallisto|bustools'],
+    commonMistake: 'Using 10x v2 chemistry settings for v3 libraries. Always pass `--protocol 10XV3` in nf-core/scrnaseq for v3 data.',
+    exampleOutput: 'Cell barcode × gene count matrices in `results/cellranger/count/` from nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq/parameters#aligner',
+    realToolExamples: ['CELLRANGER_COUNT (nf-core/modules)', 'STARSOLO (nf-core/modules)', 'nf-core/scrnaseq --aligner'],
   }),
 
   cellranger: B({
     type: 'cellranger',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
-    displayName: 'Cell Ranger',
-    technicalConcept: '10x Genomics alignment and quantification',
-    description: 'Aligns single-cell reads and generates a cell-by-gene expression matrix.',
-    technicalDetail: 'Cell Ranger is the standard 10x Genomics pipeline — it aligns reads with STAR, performs cell barcode calling, and outputs a sparse count matrix in MEX or HDF5 format.',
+    displayName: 'Cell Ranger Count',
+    technicalConcept: '`CELLRANGER_COUNT` nf-core module — nf-core/scrnaseq default aligner',
+    description: 'Aligns single-cell reads and produces a count matrix. nf-core/scrnaseq wraps Cell Ranger as an nf-core module.',
+    technicalDetail:
+      'The `CELLRANGER_COUNT` nf-core module runs 10x Genomics Cell Ranger count on FASTQ input. ' +
+      'nf-core/scrnaseq selects this when `--aligner cellranger`. ' +
+      'Output includes a filtered barcodes × genes MEX matrix, a web summary HTML, and molecule info HDF5 — all published to `results/cellranger/`.',
     category: 'analysis', icon: '🔬',
     inputPorts: [{ id: 'in-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
     outputPorts: [{ id: 'out-matrix', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Not specifying the expected cell count or letting it auto-detect with low-quality data.',
-    exampleOutput: 'A sparse count matrix (barcodes × genes) and a web summary report.',
-    realToolExamples: ['Cell Ranger', 'STARsolo'],
+    commonMistake: 'Forgetting to set `--genome` or `--fasta`/`--gtf`. Cell Ranger requires a reference transcriptome.',
+    exampleOutput: 'Filtered count matrix and web_summary.html in `results/cellranger/count/`.',
+    nfCoreDocsLink: 'https://nf-co.re/modules/cellranger/count',
+    realToolExamples: ['CELLRANGER_COUNT (nf-core/modules)', 'nf-core/scrnaseq --aligner cellranger'],
   }),
 
   seurat_qc: B({
     type: 'seurat_qc',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Seurat QC',
-    technicalConcept: 'scRNA-seq quality control / Seurat R package',
-    description: 'Filters out empty droplets, dead cells, and doublets from your single-cell dataset.',
-    technicalDetail: 'Seurat QC filters cells based on the number of detected genes, total UMI count, and mitochondrial gene percentage. Cells failing these thresholds are typically dead or debris.',
+    technicalConcept: '`SCQC` subworkflow — nf-core/scrnaseq quality control',
+    description: 'Filters low-quality cells and empty droplets. nf-core/scrnaseq runs Seurat or scater QC automatically.',
+    technicalDetail:
+      'nf-core/scrnaseq calls the `SCQC` subworkflow, which uses `SEURAT_QC` or `SCATER_QC` (nf-core/modules) ' +
+      'to filter cells by number of detected genes, UMI count, and mitochondrial gene percentage. ' +
+      'Thresholds are configurable via `--min_genes`, `--max_mito_perc`. ' +
+      'Filtered matrices are passed to the downstream analysis subworkflow.',
     category: 'analysis', icon: '🧹',
     inputPorts: [{ id: 'in-matrix', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-filtered', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Using the same QC thresholds for all datasets — thresholds should be set per experiment.',
-    exampleOutput: 'A filtered Seurat object with low-quality cells removed.',
-    realToolExamples: ['Seurat', 'scran', 'scanpy'],
+    commonMistake: 'Using the default thresholds without inspecting the QC violin plots first. Always check the distribution.',
+    exampleOutput: 'Filtered Seurat objects and QC plots in `results/scqc/` from nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq/parameters',
+    realToolExamples: ['SEURAT_QC (nf-core/modules)', 'nf-core/scrnaseq SCQC subworkflow'],
   }),
 
   normalization: B({
     type: 'normalization',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Normalize Counts',
-    technicalConcept: 'scRNA-seq count normalization / SCTransform',
-    description: 'Makes expression levels comparable across cells that were sequenced at different depths.',
-    technicalDetail: 'scRNA-seq data has high technical variability. Normalization (library size normalization or SCTransform) removes sequencing depth effects to allow meaningful comparison between cells.',
+    technicalConcept: '`SEURAT_NORMALIZE` or `SCRAN_NORMALIZE` — nf-core/scrnaseq analysis subworkflow',
+    description: 'Makes gene expression comparable across cells. nf-core/scrnaseq normalises counts inside its analysis subworkflow.',
+    technicalDetail:
+      'nf-core/scrnaseq normalises count matrices using `SEURAT_NORMALIZE` (log-normalization or SCTransform) ' +
+      'within the `SCRNASEQ_ANALYSIS` subworkflow. ' +
+      'Normalisation removes sequencing depth bias so cells can be compared. ' +
+      'Controlled by `--normalize_seurat_vst` and `--vst_flavor` parameters.',
     category: 'analysis', icon: '⚖️',
     inputPorts: [{ id: 'in-filtered', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-norm', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Running clustering before normalization — results will be dominated by sequencing depth.',
-    exampleOutput: 'A normalized expression matrix with comparable counts across cells.',
-    realToolExamples: ['Seurat SCTransform', 'scran pooling'],
+    commonMistake: 'Normalising before removing doublets. Doublet removal should come first in nf-core/scrnaseq.',
+    exampleOutput: 'Normalized Seurat objects ready for dimensionality reduction in nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq',
+    realToolExamples: ['SEURAT_NORMALIZE (nf-core/modules)', 'nf-core/scrnaseq SCRNASEQ_ANALYSIS'],
   }),
 
   dim_reduction: B({
     type: 'dim_reduction',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Dim Reduction',
-    technicalConcept: 'PCA + UMAP / dimensionality reduction',
-    description: 'Compresses thousands of gene dimensions into 2D so you can visualize cell populations.',
-    technicalDetail: 'PCA reduces the gene expression matrix to principal components capturing variance. UMAP (Uniform Manifold Approximation and Projection) then projects cells into 2D for visualization.',
+    technicalConcept: '`SEURAT_DIM_REDUCTION` (PCA + UMAP) — nf-core/scrnaseq analysis subworkflow',
+    description: 'Reduces gene dimensions to 2D for visualisation. nf-core/scrnaseq runs PCA and UMAP as part of its standard analysis.',
+    technicalDetail:
+      'nf-core/scrnaseq calls `SEURAT_DIM_REDUCTION` inside `SCRNASEQ_ANALYSIS` to run ' +
+      'PCA (principal component analysis) followed by UMAP. ' +
+      'The number of PCs used for UMAP is set by `--n_pcs` (default: 30). ' +
+      'UMAP plots are published to `results/analysis/` per sample.',
     category: 'analysis', icon: '🗺️',
     inputPorts: [{ id: 'in-norm', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-embedding', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Interpreting UMAP distances as biologically meaningful — UMAP is for visualization only.',
-    exampleOutput: 'PCA and UMAP embeddings for each cell.',
-    realToolExamples: ['Seurat RunPCA/RunUMAP', 'scanpy'],
+    commonMistake: 'Interpreting UMAP geometry as meaningful distance. UMAP preserves local structure only.',
+    exampleOutput: 'PCA and UMAP plots published to `results/analysis/` by nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq',
+    realToolExamples: ['SEURAT_DIM_REDUCTION (nf-core/modules)', 'nf-core/scrnaseq --n_pcs'],
   }),
 
   clustering: B({
     type: 'clustering',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Cell Clustering',
-    technicalConcept: 'Graph-based clustering / Louvain or Leiden algorithm',
-    description: 'Groups cells with similar expression patterns into clusters that may represent cell types.',
-    technicalDetail: 'Seurat constructs a k-nearest-neighbour graph in PCA space and applies Louvain or Leiden community detection. The resolution parameter controls cluster granularity.',
+    technicalConcept: '`SEURAT_CLUSTER` nf-core module — nf-core/scrnaseq Louvain/Leiden clustering',
+    description: 'Groups cells into clusters. nf-core/scrnaseq runs graph-based clustering as part of its standard analysis.',
+    technicalDetail:
+      'nf-core/scrnaseq calls `SEURAT_CLUSTER` (nf-core/modules) using the Louvain or Leiden algorithm on the ' +
+      'shared nearest-neighbour graph in PCA space. ' +
+      'Resolution is set via `--cluster_resolution` (default: 0.8). ' +
+      'Cluster assignments are overlaid on UMAP plots and published to `results/analysis/`.',
     category: 'analysis', icon: '🫧',
     inputPorts: [{ id: 'in-embedding', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-clusters', label: 'QC output', dataType: 'qc_output' }],
-    commonMistake: 'Over-clustering by using too high a resolution. Start low and increase if needed.',
-    exampleOutput: 'Cluster assignments for each cell, overlaid on a UMAP plot.',
-    realToolExamples: ['Seurat FindClusters', 'scanpy leiden'],
+    commonMistake: 'Using a single resolution. nf-core/scrnaseq supports multiple resolutions via `--cluster_resolution 0.5,1.0`.',
+    exampleOutput: 'Cluster-labelled UMAP plots in `results/analysis/` from nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq/parameters#cluster_resolution',
+    realToolExamples: ['SEURAT_CLUSTER (nf-core/modules)', 'nf-core/scrnaseq --cluster_resolution'],
   }),
 
   marker_genes: B({
     type: 'marker_genes',
     pack: 'single_cell', status: 'phase2', executionMode: 'coming_soon',
     displayName: 'Marker Genes',
-    technicalConcept: 'Cluster marker gene identification / FindMarkers',
-    description: 'Identifies the genes that most distinguish each cell cluster from all others.',
-    technicalDetail: 'FindMarkers tests for differential expression between one cluster and all others. Top marker genes are used to assign cell type identities based on known markers.',
+    technicalConcept: '`SEURAT_MARKERS` nf-core module — nf-core/scrnaseq marker gene identification',
+    description: 'Finds genes that define each cluster. nf-core/scrnaseq identifies marker genes automatically for each cluster.',
+    technicalDetail:
+      'nf-core/scrnaseq calls `SEURAT_MARKERS` (nf-core/modules) to run Wilcoxon rank-sum tests comparing each cluster ' +
+      'against all others. Top marker genes are used to infer cell type identities. ' +
+      'Results are published as CSV tables and dot plots to `results/analysis/`.',
     category: 'output', icon: '🎯',
     inputPorts: [{ id: 'in-clusters', label: 'QC output', dataType: 'qc_output' }],
     outputPorts: [{ id: 'out-markers', label: 'Report data', dataType: 'report_data' }],
-    commonMistake: 'Assigning cell types based on a single marker gene. Multiple markers should be used.',
-    exampleOutput: 'A table of top marker genes per cluster with fold changes and p-values.',
-    realToolExamples: ['Seurat FindMarkers', 'scanpy rank_genes_groups'],
+    commonMistake: 'Assigning a cell type based on one marker gene. Always verify with multiple canonical markers.',
+    exampleOutput: 'Marker gene tables and feature plots in `results/analysis/` from nf-core/scrnaseq.',
+    nfCoreDocsLink: 'https://nf-co.re/scrnaseq',
+    realToolExamples: ['SEURAT_MARKERS (nf-core/modules)', 'nf-core/scrnaseq'],
   }),
 
   // ════════════════════════════════════════════════════════════════════════════
-  // PACK: nf-core Tools  (Phase 1–3 — coming soon)
+  // PACK: nf-core/tools  (Phase 1–3 — coming soon)
   // ════════════════════════════════════════════════════════════════════════════
 
   channel_creator: B({
     type: 'channel_creator',
     pack: 'nfcore_tools', status: 'phase1', executionMode: 'coming_soon',
     displayName: 'Channel Creator',
-    technicalConcept: 'Nextflow channel / fromPath, fromSamplesheet',
-    description: 'Creates a data stream that connects pipeline steps — the core of Nextflow\'s data model.',
-    technicalDetail: 'Nextflow channels carry data between processes asynchronously. Channel factories like Channel.fromPath and Channel.fromSamplesheet create channels from files or CSV input.',
+    technicalConcept: '`Channel.fromSamplesheet()` / nf-validation — Nextflow DSL2 channel factory',
+    description: 'Creates the data stream that moves files between nf-core pipeline steps. Every nf-core pipeline starts here.',
+    technicalDetail:
+      'nf-core pipelines use `Channel.fromSamplesheet(params.input)` (from the nf-validation plugin) to create ' +
+      'typed channels from a CSV samplesheet. The channel emits `[meta, file]` or `[meta, file1, file2]` tuples ' +
+      'that flow through all downstream processes. Channels are the core data-passing mechanism in Nextflow DSL2.',
     category: 'pipeline', icon: '🌊',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake: 'Consuming a channel more than once — Nextflow channels are consumed on read.',
-    exampleOutput: 'A Nextflow channel emitting file tuples to downstream processes.',
+    commonMistake: 'Trying to use a channel value after it has been consumed — Nextflow channels are single-use queues.',
+    exampleOutput: 'A typed channel emitting `[meta, fastq_1, fastq_2]` tuples to downstream nf-core modules.',
     nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-    realToolExamples: ['Nextflow DSL2'],
+    realToolExamples: ['Channel.fromSamplesheet() (nf-validation)', 'Nextflow DSL2', 'nf-core pipeline main.nf'],
   }),
 
   subworkflow_block: B({
     type: 'subworkflow_block',
     pack: 'nfcore_tools', status: 'phase1', executionMode: 'coming_soon',
-    displayName: 'Subworkflow',
-    technicalConcept: 'nf-core subworkflow / reusable workflow group',
-    description: 'Groups multiple steps into a reusable unit that can be shared across pipelines.',
-    technicalDetail: 'nf-core subworkflows are modular groups of processes that implement a complete analytical sub-task (e.g. BAM_SORT_STATS_SAMTOOLS). They can be imported into any pipeline.',
+    displayName: 'nf-core Subworkflow',
+    technicalConcept: 'nf-core subworkflow — reusable group of nf-core modules',
+    description: 'A named, reusable group of nf-core modules. Examples: `BAM_SORT_STATS_SAMTOOLS`, `FASTQ_FASTQC_UMITOOLS_TRIMGALORE`.',
+    technicalDetail:
+      'nf-core subworkflows bundle multiple nf-core modules into a single importable unit. ' +
+      'They live in `subworkflows/nf-core/` and are shared across pipelines via `nf-core subworkflows install`. ' +
+      'A subworkflow has clearly defined inputs and outputs and its own `meta.yml` and test data. ' +
+      'Example: `BAM_SORT_STATS_SAMTOOLS` wraps SAMTOOLS_SORT → SAMTOOLS_INDEX → SAMTOOLS_STATS in one call.',
     category: 'pipeline', icon: '📦',
     inputPorts: [{ id: 'in-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
     outputPorts: [{ id: 'out-context', label: 'Pipeline context', dataType: 'pipeline_context' }],
-    commonMistake: 'Creating a subworkflow for a single process. Subworkflows are for groups of related steps.',
-    exampleOutput: 'A reusable subworkflow block callable from multiple pipelines.',
+    commonMistake: 'Writing a subworkflow for a single process. Subworkflows should group 2+ tightly related steps.',
+    exampleOutput: 'A reusable subworkflow installable via `nf-core subworkflows install <name>`.',
     nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-    realToolExamples: ['nf-core/modules'],
+    realToolExamples: ['BAM_SORT_STATS_SAMTOOLS', 'FASTQ_FASTQC_UMITOOLS_TRIMGALORE', '`nf-core subworkflows install`'],
   }),
 
   module_creator: B({
     type: 'module_creator',
     pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
-    displayName: 'Module Creator',
-    technicalConcept: 'nf-core module / bioinformatics tool wrapper',
-    description: 'Wraps a bioinformatics tool into a standardised reusable module for the nf-core community.',
-    technicalDetail: 'nf-core modules are Nextflow DSL2 process definitions that wrap individual bioinformatics tools with consistent input/output conventions, containers, and test data.',
+    displayName: 'Create Module',
+    technicalConcept: '`nf-core modules create` — nf-core/tools CLI command',
+    description: 'Scaffolds a new nf-core module wrapping a bioinformatics tool. Uses the nf-core/tools CLI.',
+    technicalDetail:
+      'Running `nf-core modules create <tool>/<subtool>` generates a standardised module directory with ' +
+      '`main.nf` (Nextflow process), `meta.yml` (documentation), `environment.yml` (conda env), and `tests/`. ' +
+      'The module follows the nf-core module specifications: `[meta, file]` input convention, ' +
+      'Biocontainers Docker/Singularity images, and pytest-workflow tests.',
     category: 'pipeline', icon: '🔨',
     inputPorts: [],
     outputPorts: [],
-    commonMistake: 'Writing a module without a corresponding test file. All nf-core modules must have tests.',
-    exampleOutput: 'A module directory with main.nf, meta.yml, and tests/.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/components/overview',
-    realToolExamples: ['nf-core/modules'],
+    commonMistake: 'Not adding a `tests/main.nf.test` file. All nf-core modules must have nf-test tests before they can be submitted to nf-core/modules.',
+    exampleOutput: 'A module directory at `modules/nf-core/<tool>/<subtool>/` with main.nf, meta.yml, and tests/.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/contributing/modules',
+    realToolExamples: ['`nf-core modules create`', '`nf-core modules lint`', 'nf-core/modules repository'],
   }),
 
   pipeline_linter: B({
     type: 'pipeline_linter',
     pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
-    displayName: 'Pipeline Linter',
-    technicalConcept: 'nf-core lint / pipeline structure validation',
-    description: 'Checks your pipeline follows nf-core standards and best practices.',
-    technicalDetail: 'nf-core lint checks pipeline structure, file naming, nextflow_schema.json correctness, CHANGELOG format, and dozens of other requirements for contributing to nf-core.',
+    displayName: 'nf-core Lint',
+    technicalConcept: '`nf-core lint` — nf-core/tools pipeline validation command',
+    description: 'Validates that your pipeline meets all nf-core standards. Run before submitting a PR to nf-core.',
+    technicalDetail:
+      'The `nf-core lint` command (from the nf-core/tools Python package) checks ~100 requirements: ' +
+      '`nextflow_schema.json` completeness, `CITATIONS.md`, `CHANGELOG.md` format, required config files, ' +
+      'module version pins, `meta.yml` presence for all modules, and more. ' +
+      'Failing checks block nf-core community review. Warnings are advisory.',
     category: 'analysis', icon: '✅',
     inputPorts: [],
     outputPorts: [],
-    commonMistake: 'Running lint only at the end. Run it early to catch structural issues before they accumulate.',
-    exampleOutput: 'A lint report listing passed, warned, and failed checks.',
-    nfCoreDocsLink: 'https://nf-co.re/docs/specifications/pipelines/overview',
-    realToolExamples: ['nf-core tools lint'],
+    commonMistake: 'Running lint only before submission. Run `nf-core lint` continuously during development to catch issues early.',
+    exampleOutput: 'A lint report with pass/warn/fail counts — equivalent to what nf-core reviewers see on your PR.',
+    nfCoreDocsLink: 'https://nf-co.re/docs/nf-core-tools/cli/pipelines/lint',
+    realToolExamples: ['`nf-core lint`', '`nf-core modules lint`', 'nf-core/tools'],
   }),
 
   test_data_fetcher: B({
     type: 'test_data_fetcher',
     pack: 'nfcore_tools', status: 'phase3', executionMode: 'coming_soon',
     displayName: 'Test Data Fetcher',
-    technicalConcept: 'nf-core test datasets / nf-core/test-datasets',
-    description: 'Downloads tiny curated test datasets used to verify pipeline steps work correctly.',
-    technicalDetail: 'nf-core maintains a repository of tiny test datasets (a few MB each) that allow modules and pipelines to be tested quickly and reproducibly in CI environments.',
+    technicalConcept: '`nf-core/test-datasets` repository — nf-core CI test files',
+    description: 'Provides tiny FASTQ, BAM, and VCF files used in nf-core module and pipeline CI tests.',
+    technicalDetail:
+      'The `nf-core/test-datasets` GitHub repository hosts curated tiny test files (<5 MB) for all nf-core modules. ' +
+      'Files are referenced in `tests/` via GitHub raw URLs. ' +
+      'nf-test uses these files to run module tests in GitHub Actions CI. ' +
+      'When writing a new module, you either reuse an existing test file or add a new one to nf-core/test-datasets.',
     category: 'data', icon: '📦',
     inputPorts: [],
     outputPorts: [{ id: 'out-reads', label: 'FASTQ reads', dataType: 'fastq_reads' }],
-    commonMistake: 'Using real patient data for testing instead of the provided test datasets.',
-    exampleOutput: 'Small FASTQ, BAM, or VCF files from the nf-core/test-datasets repository.',
+    commonMistake: 'Adding large test files to nf-core/test-datasets. Files must be <5 MB — create minimal synthetic test data.',
+    exampleOutput: 'Small FASTQ/BAM/VCF files from `github.com/nf-core/test-datasets` used in module nf-tests.',
     nfCoreDocsLink: 'https://nf-co.re/docs/nf-core-tools/cli/test-datasets/list',
-    realToolExamples: ['nf-core/test-datasets'],
+    realToolExamples: ['nf-core/test-datasets GitHub repo', 'nf-test', '`nf-core modules test`'],
   }),
 }
 
