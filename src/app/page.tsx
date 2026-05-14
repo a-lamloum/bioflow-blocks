@@ -118,6 +118,11 @@ export default function LandingPage() {
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
             GitHub
           </a>
+          <Link href="/missions"
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
+            style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
+            Missions
+          </Link>
           <ThemeToggle variant="dark-surface" />
           <Link href="/builder"
             className="text-sm font-bold px-5 py-2 rounded-lg animate-pulse-glow"

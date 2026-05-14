@@ -2,18 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Badge } from '@/components/ui/Badge'
-import { FIRST_QC_MISSION } from '@/lib/mission/missions'
-import type { MissionState } from '@/types'
+import type { MissionState, Mission } from '@/types'
+import { MISSION_1 } from '@/lib/mission/missions'
 
 interface MissionPanelProps {
   missionState: MissionState
+  mission?: Mission
 }
 
-export function MissionPanel({ missionState }: MissionPanelProps) {
+export function MissionPanel({ missionState, mission = MISSION_1 }: MissionPanelProps) {
   const [open, setOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const steps = FIRST_QC_MISSION.steps
+  const steps = mission.steps
   const currentStep = steps[missionState.currentStepIndex]
 
   // Close on outside click
@@ -67,7 +68,7 @@ export function MissionPanel({ missionState }: MissionPanelProps) {
 
         {missionState.completed && (
           <span className="ml-3 text-sm text-fg-secondary flex-1">
-            Great work — you built your first QC pipeline!
+            {mission.title} — complete! 🎉
           </span>
         )}
 
@@ -86,8 +87,8 @@ export function MissionPanel({ missionState }: MissionPanelProps) {
       {open && (
         <div className="absolute top-12 left-0 z-50 w-72 bg-surface rounded-xl shadow-lg border border-border">
           <div className="px-4 pt-3 pb-1">
-            <h3 className="text-xl font-bold text-fg-primary">{FIRST_QC_MISSION.title}</h3>
-            <p className="text-sm text-fg-secondary mt-1">{FIRST_QC_MISSION.description}</p>
+            <h3 className="text-xl font-bold text-fg-primary">{mission.title}</h3>
+            <p className="text-sm text-fg-secondary mt-1">{mission.description}</p>
           </div>
           <ul className="flex flex-col px-4 py-3 gap-3">
             {steps.map((step, i) => {

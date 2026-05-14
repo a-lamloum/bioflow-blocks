@@ -6,14 +6,23 @@ import { BlockLibrary } from '@/components/blocks/BlockLibrary'
 import { BlockInspector } from '@/components/inspector/BlockInspector'
 import { MissionPanel } from '@/components/mission/MissionPanel'
 import { RunPanel } from '@/components/run/RunPanel'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { ToastContainer } from '@/components/ui/Toast'
 import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { CompletionBadge } from '@/components/mission/CompletionBadge'
 import type { ToastItem } from '@/components/ui/Toast'
 import { compile } from '@/lib/compiler/compile'
 import { validate } from '@/lib/validator/validate'
 import { simulate } from '@/lib/simulator/simulate'
-import { checkCompletion, getCurrentStepIndex, FIRST_QC_MISSION } from '@/lib/mission/missions'
+import {
+  checkMissionCompletion,
+  getCurrentStepIndex,
+  MISSIONS,
+  MISSION_1,
+  saveMissionComplete,
+} from '@/lib/mission/missions'
 import { BLOCK_DEFINITIONS } from '@/lib/blocks/definitions'
 import type {
   PipelineNode,
@@ -24,6 +33,7 @@ import type {
   MissionState,
   BlockType,
   DataType,
+  Mission,
 } from '@/types'
 
 let toastCounter = 0
@@ -75,6 +85,13 @@ const DEMO_IR: WorkflowIR = {
 }
 
 export default function BuilderPage() {
+  const searchParams = useSearchParams()
+  // Pick the active mission from URL param, default to Mission 1
+  const [activeMission, setActiveMission] = useState<Mission>(() => {
+    const id = searchParams?.get('mission')
+    return MISSIONS.find(m => m.id === id) ?? MISSION_1
+  })
+
   const [nodes, setNodes] = useState<PipelineNode[]>([])
   const [edges, setEdges] = useState<PipelineEdge[]>([])
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
@@ -82,6 +99,7 @@ export default function BuilderPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [currentIR, setCurrentIR] = useState<WorkflowIR | null>(null)
   const [missionState, setMissionState] = useState<MissionState>(INITIAL_MISSION)
+  const [showBadge, setShowBadge] = useState(false)
   const [demoResult] = useState<SimulationResult>(() => simulate(DEMO_IR))
   const [toasts, setToasts] = useState<ToastItem[]>([])
   // Track last toast to deduplicate: isValidConnection fires on every mouse-move during drag
@@ -106,13 +124,13 @@ export default function BuilderPage() {
     const ir = compile(nodes, edges)
     setCurrentIR(ir)
 
-    const stepIdx = getCurrentStepIndex(nodes)
+    const stepIdx = getCurrentStepIndex(nodes, activeMission)
     setMissionState(prev => {
       if (prev.completed) return prev
-      const completedIds = FIRST_QC_MISSION.steps.slice(0, stepIdx).map(s => s.id)
+      const completedIds = activeMission.steps.slice(0, stepIdx).map(s => s.id)
       return { ...prev, currentStepIndex: stepIdx, completedStepIds: completedIds }
     })
-  }, [nodes, edges])
+  }, [nodes, edges, activeMission])
 
   const handleNodesChange = useCallback((updated: PipelineNode[]) => setNodes(updated), [])
   const handleEdgesChange = useCallback((updated: PipelineEdge[]) => setEdges(updated), [])
@@ -159,15 +177,17 @@ export default function BuilderPage() {
     const result = simulate(currentIR)
     setSimulationResult(result)
 
-    if (checkCompletion(nodes, result)) {
+    if (checkMissionCompletion(activeMission, nodes, result)) {
       setMissionState(prev => ({
         ...prev,
         completed: true,
-        completedStepIds: FIRST_QC_MISSION.steps.map(s => s.id),
-        currentStepIndex: FIRST_QC_MISSION.steps.length - 1,
+        completedStepIds: activeMission.steps.map(s => s.id),
+        currentStepIndex: activeMission.steps.length - 1,
       }))
+      saveMissionComplete(activeMission.id)
+      setShowBadge(true)
     }
-  }, [currentIR, nodes])
+  }, [currentIR, nodes, activeMission])
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId)
   const selectedBlockType = selectedNode?.data.blockType ?? null
@@ -176,12 +196,21 @@ export default function BuilderPage() {
     <main className="flex flex-col h-screen overflow-hidden bg-canvas">
       <TutorialWizard />
       <ToastContainer toasts={toasts} onDismiss={dismissToast} durationMs={5000} />
+      {showBadge && (
+        <CompletionBadge
+          missionId={activeMission.id}
+          onDismiss={() => setShowBadge(false)}
+        />
+      )}
 
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border bg-surface-2">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-fg-primary">BioFlow Blocks</span>
-          <span className="text-xs text-fg-muted">— nf-core visual simulator</span>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-sm font-bold text-fg-primary">BioFlow Blocks</Link>
+          <span className="text-fg-muted text-xs">—</span>
+          <Link href="/missions" className="text-xs font-semibold text-fg-secondary hover:text-teal-500 transition-colors">
+            Missions
+          </Link>
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggle variant="light-surface" />
@@ -194,7 +223,7 @@ export default function BuilderPage() {
 
         {/* Center: mission strip + canvas */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <MissionPanel missionState={missionState} />
+          <MissionPanel missionState={missionState} mission={activeMission} />
           <PipelineCanvas
             onSelectNode={setSelectedNodeId}
             onNodesChange={handleNodesChange}

@@ -1,75 +1,147 @@
-import type { Mission, MissionStep, PipelineNode, SimulationResult } from '@/types'
+import type { Mission, MissionStep, PipelineNode, SimulationResult, BlockType } from '@/types'
 
-const STEPS: MissionStep[] = [
-  {
-    id: 'step-1',
-    instruction: 'Drag a "Start Pipeline" block onto the canvas.',
-    hint: 'Look in the Pipeline section of the block library on the left.',
-  },
-  {
-    id: 'step-2',
-    instruction: 'Drag a "Samplesheet" block and connect it to Start Pipeline.',
-    hint: 'Connect the right port of Start Pipeline to the left port of Samplesheet.',
-  },
-  {
-    id: 'step-3',
-    instruction: 'Add an "Input FASTQ" block and connect it to Samplesheet.',
-    hint: 'Input FASTQ takes sample records from Samplesheet and provides FASTQ reads.',
-  },
-  {
-    id: 'step-4',
-    instruction: 'Add a "QC Step" block and connect it to Input FASTQ.',
-    hint: 'QC Step checks whether your sequencing reads look healthy.',
-  },
-  {
-    id: 'step-5',
-    instruction: 'Add a "Generate Report" block and connect it to QC Step.',
-    hint: 'Generate Report collects QC results into a readable summary.',
-  },
-  {
-    id: 'step-6',
-    instruction: 'Add an "Output Results" block and connect it to Generate Report. Then click Simulate!',
-    hint: 'Output Results is where your final files appear. Hit Simulate when everything is connected.',
-  },
+const PROGRESS_KEY = 'bioflow_mission_progress'
+
+// ─── Mission 1: Build Your First QC Pipeline ─────────────────────────────────
+
+const M1_STEPS: MissionStep[] = [
+  { id: 'm1-s1', instruction: 'Drag a "Start Pipeline" block onto the canvas.', hint: 'Find it in the Pipeline section of the block library on the left.' },
+  { id: 'm1-s2', instruction: 'Add a "Samplesheet" block and connect it to Start Pipeline.', hint: 'Connect the right bump of Start Pipeline to the left notch of Samplesheet.' },
+  { id: 'm1-s3', instruction: 'Add an "Input FASTQ" block and connect it to Samplesheet.', hint: 'Input FASTQ takes sample records from Samplesheet and emits FASTQ read pairs.' },
+  { id: 'm1-s4', instruction: 'Add a "QC Step" block and connect it to Input FASTQ.', hint: 'QC Step checks whether your sequencing reads look healthy (maps to nf-core FASTQC module).' },
+  { id: 'm1-s5', instruction: 'Add a "Generate Report" block and connect it to QC Step.', hint: 'Generate Report collects QC results into one summary (maps to nf-core MULTIQC module).' },
+  { id: 'm1-s6', instruction: 'Add "Output Results" and connect it to Generate Report. Then click Simulate!', hint: 'Output Results = publishDir in nf-core. Hit Simulate when all blocks are connected.' },
 ]
 
-export const FIRST_QC_MISSION: Mission = {
+export const MISSION_1: Mission = {
   id: 'mission_first_qc_pipeline',
   title: 'Build Your First QC Pipeline',
-  description: 'Connect 6 blocks to build a simple RNA-seq quality control workflow, then simulate it.',
-  steps: STEPS,
-  requiredBlockTypes: [
-    'start_pipeline',
-    'samplesheet',
-    'input_fastq',
-    'qc_step',
-    'generate_report',
-    'output_results',
-  ],
+  description: 'Connect 6 blocks to build the nf-core/rnaseq QC workflow — samplesheet, FASTQ input, FASTQC, MultiQC, and output.',
+  steps: M1_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS = [FIRST_QC_MISSION]
+// ─── Mission 2: Add Trimming After QC ────────────────────────────────────────
 
-/** Returns true if all required block types are present AND the simulation completed. */
-export function checkCompletion(
+const M2_STEPS: MissionStep[] = [
+  { id: 'm2-s1', instruction: 'Build the base QC pipeline: Start → Samplesheet → Input FASTQ → QC Step.', hint: 'This is the same start as Mission 1. You can do it faster this time!' },
+  { id: 'm2-s2', instruction: 'Add a "Trim Reads" block and connect it to Input FASTQ (alongside QC Step).', hint: 'Trim Reads and QC Step both accept FASTQ reads — you can connect both to Input FASTQ.' },
+  { id: 'm2-s3', instruction: 'Connect Trim Reads to Generate Report.', hint: 'Generate Report accepts both QC output and trimmed reads — connect from the Trim Reads output.' },
+  { id: 'm2-s4', instruction: 'Connect QC Step to Generate Report as well.', hint: 'Generate Report has two input ports — one for QC output, one for trimmed reads.' },
+  { id: 'm2-s5', instruction: 'Add Output Results and connect it to Generate Report. Then click Simulate!', hint: 'This teaches the TRIMGALORE → MULTIQC flow in nf-core/rnaseq.' },
+]
+
+export const MISSION_2: Mission = {
+  id: 'mission_add_trimming',
+  title: 'Add Trimming After QC',
+  description: 'Learn why nf-core/rnaseq trims reads before alignment — add TrimGalore to your pipeline and see it in the report.',
+  steps: M2_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'trim_reads', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── Mission 3: Generate the nf-core Command ─────────────────────────────────
+
+const M3_STEPS: MissionStep[] = [
+  { id: 'm3-s1', instruction: 'Build the full QC pipeline with trimming (all 7 core blocks).', hint: 'Repeat Mission 2 — Start → Samplesheet → Input FASTQ → QC + Trim → Report → Output.' },
+  { id: 'm3-s2', instruction: 'Add a "Run Profile" block and connect it before Samplesheet.', hint: 'Run Profile teaches the -profile flag in nf-core — docker, singularity, conda, or test.' },
+  { id: 'm3-s3', instruction: 'Add a "Parameter Setting" block and connect it before Samplesheet.', hint: 'Parameter Setting teaches --genome GRCh38 and other nf-core/rnaseq parameters.' },
+  { id: 'm3-s4', instruction: 'Simulate the pipeline and look at the generated nextflow run command.', hint: 'Check the Run panel — the command shows: nextflow run nf-core/rnaseq --input ... --genome ... -profile docker.' },
+]
+
+export const MISSION_3: Mission = {
+  id: 'mission_generate_command',
+  title: 'Generate the nf-core Command',
+  description: 'Learn how visual blocks map to a real nextflow run nf-core/rnaseq command — profiles, parameters, and outdir.',
+  steps: M3_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'trim_reads', 'generate_report', 'output_results', 'run_profile', 'parameter_setting'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── All missions ──────────────────────────────────────────────────────────────
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3]
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+
+export const MISSION_BADGES: Record<string, { emoji: string; label: string; reflection: string }> = {
+  mission_first_qc_pipeline: {
+    emoji: '🔬',
+    label: 'Pipeline Builder',
+    reflection: 'Why does the pipeline need a samplesheet before it can find your FASTQ files?',
+  },
+  mission_add_trimming: {
+    emoji: '✂️',
+    label: 'Trim Master',
+    reflection: 'Why does nf-core/rnaseq trim reads before alignment rather than after?',
+  },
+  mission_generate_command: {
+    emoji: '⌨️',
+    label: 'Command Crafter',
+    reflection: 'What does -profile docker tell Nextflow to do differently?',
+  },
+}
+
+// ─── Persistence ─────────────────────────────────────────────────────────────
+
+export function loadCompletedMissions(): Set<string> {
+  if (typeof window === 'undefined') return new Set()
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY)
+    if (!raw) return new Set()
+    return new Set(JSON.parse(raw) as string[])
+  } catch {
+    return new Set()
+  }
+}
+
+export function saveMissionComplete(missionId: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    const current = loadCompletedMissions()
+    current.add(missionId)
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify([...current]))
+  } catch { /* ignore */ }
+}
+
+export function getMissionStatus(missionId: string): 'locked' | 'available' | 'completed' {
+  const completed = loadCompletedMissions()
+  if (completed.has(missionId)) return 'completed'
+  const idx = MISSIONS.findIndex(m => m.id === missionId)
+  if (idx === 0) return 'available'
+  // A mission is available if the previous mission is completed
+  const prev = MISSIONS[idx - 1]
+  return prev && completed.has(prev.id) ? 'available' : 'locked'
+}
+
+// ─── Completion check helpers ─────────────────────────────────────────────────
+
+export function checkMissionCompletion(
+  mission: Mission,
   nodes: PipelineNode[],
   result: SimulationResult | null
 ): boolean {
   if (!result || result.status !== 'completed') return false
   const presentTypes = new Set(nodes.map(n => n.data.blockType))
-  return FIRST_QC_MISSION.requiredBlockTypes.every(t => presentTypes.has(t))
+  return mission.requiredBlockTypes.every(t => presentTypes.has(t as BlockType))
 }
 
-/** Returns the index (0-based) of the current mission step based on which block types are on canvas. */
-export function getCurrentStepIndex(nodes: PipelineNode[]): number {
-  const presentTypes = new Set(nodes.map(n => n.data.blockType))
-  const ordered = FIRST_QC_MISSION.requiredBlockTypes
+/** @deprecated Use checkMissionCompletion with explicit mission */
+export function checkCompletion(nodes: PipelineNode[], result: SimulationResult | null): boolean {
+  return checkMissionCompletion(MISSION_1, nodes, result)
+}
 
+export function getCurrentStepIndex(nodes: PipelineNode[], mission: Mission = MISSION_1): number {
+  const presentTypes = new Set(nodes.map(n => n.data.blockType))
+  const ordered = mission.requiredBlockTypes
   for (let i = ordered.length - 1; i >= 0; i--) {
-    if (presentTypes.has(ordered[i])) {
-      return Math.min(i + 1, STEPS.length - 1)
+    if (presentTypes.has(ordered[i] as BlockType)) {
+      return Math.min(i + 1, mission.steps.length - 1)
     }
   }
   return 0
 }
+
+// Keep backward compat alias
+export const FIRST_QC_MISSION = MISSION_1

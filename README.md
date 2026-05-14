@@ -27,8 +27,8 @@
 </p>
 
 <p>
-  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200%20Prototype-orange?style=flat-square" />
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-33%20passing-brightgreen?style=flat-square" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%202%20Complete-brightgreen?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-111%20passing-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
 </p>
@@ -72,14 +72,20 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
-## Features (Phase 0)
+## Features (Phase 0 + Phase 2)
 
-- **Visual pipeline canvas** — Scratch-style blocks with puzzle connectors, drag-and-drop, React Flow DAG
-- **7 core block types** — Start Pipeline, Samplesheet, Input FASTQ, QC Step, Trim Reads, Generate Report, Output Results
-- **Connection validation** — incompatible connections are rejected with a beginner-friendly explanation
-- **Mock simulation engine** — pure, deterministic, client-side; produces a trace and QC report within seconds
-- **Block inspector** — click any block to see its beginner explanation and nf-core concept side by side
-- **Mission system** — a guided step-by-step mission to build your first RNA-seq QC pipeline
+- **Visual pipeline canvas** — Scratch-style puzzle-connector blocks, drag-and-drop, React Flow DAG
+- **45 blocks across 7 nf-core packs** — from nf-core/rnaseq to nf-core/sarek, nf-core/scrnaseq, and more
+- **Connection validation** — incompatible connections rejected with a beginner-friendly toast
+- **Mock simulation engine** — pure, deterministic, client-side; trace + QC report in under 3 seconds
+- **Block inspector** — beginner explanation + nf-core module name always visible side by side
+- **3 guided missions** — Build QC Pipeline · Add Trimming · Generate the nf-core Command
+- **Mission map** — visual gallery at `/missions` showing locked/available/completed states
+- **Completion badges** — earned on mission completion with a reflection question and "Next Mission" CTA
+- **Mission persistence** — progress saved to localStorage across sessions
+- **Tutorial wizard** — 6-step guided tour on first visit
+- **Demo run preview** — completed simulation shown immediately on first load
+- **Light/dark theme** — toggle in nav, persisted to localStorage, no flash on reload
 - **Workflow JSON viewer** — see the internal pipeline IR your blocks compile to
 - **No installation required** — runs entirely in the browser; no backend, no auth, no database
 
@@ -103,13 +109,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Try the mission
+### Try the missions
 
-1. Follow the **Mission Panel** strip at the top of the canvas
-2. Drag **Start Pipeline → Samplesheet → Input FASTQ → QC Step → Generate Report → Output Results**
-3. Connect each block to the next by dragging from the right bump to the left notch
-4. Click **▶ Simulate** in the bottom panel
-5. Read the trace and QC report that appear
+Go to [http://localhost:3000/missions](http://localhost:3000/missions) to see the mission map, then:
+
+1. **Mission 1** — Build Your First QC Pipeline: drag 6 nf-core/rnaseq blocks, connect, simulate
+2. **Mission 2** — Add Trimming: add TrimGalore alongside FASTQC, see both in the report
+3. **Mission 3** — Generate the Command: add a profile and parameter block, inspect the `nextflow run` output
+
+Each mission earns a badge and shows a reflection question to reinforce the nf-core concept.
 
 ### Other commands
 
@@ -206,12 +214,12 @@ Every block in BioFlow Blocks maps to a real nf-core or Nextflow concept:
 
 | Phase | Status | Description |
 |---|---|---|
-| **Phase 0** | ✅ Complete | Visual prototype — blocks, canvas, mock simulation, mission |
-| **Phase 1** | 🔜 Planned | Project save/load, samplesheet validator, module registry |
-| **Phase 2** | 🔜 Planned | Mission map, gamification, badges, hints, reflection questions |
-| **Phase 3** | 🔜 Planned | Command generator — visual pipeline → `nextflow run` command |
+| **Phase 0** | ✅ Complete | Visual prototype — 7 blocks, canvas, mock simulation, first mission |
+| **Phase 2** | ✅ Complete | Mission map, 3 missions, completion badges, reflection questions, dark mode, 45-block library |
+| **Phase 1** | 🔜 Planned | Project save/load, samplesheet validator with friendly errors, module registry |
+| **Phase 3** | 🔜 Planned | Command generator — visual pipeline → full `nextflow run nf-core/<pipeline>` command |
 | **Phase 4** | 🔜 Planned | Tiny test-data execution in a sandboxed worker |
-| **Phase 5** | 🔜 Planned | nf-core concept packs — Variant Calling, Metagenomics, etc. |
+| **Phase 5** | 🔜 Planned | nf-core concept packs — Variant Calling, Metagenomics, scRNA-seq (blocks already defined) |
 
 ---
 
