@@ -176,7 +176,44 @@ export const MISSION_9: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9]
+// ─── Mission 10: Download Public Data with nf-core/fetchngs ──────────────────
+
+const M10_STEPS: MissionStep[] = [
+  { id: 'm10-s1', instruction: 'Go to Packs and open the nf-core/fetchngs pack page.', hint: 'Click "Packs" in the nav. fetchngs is the tool that downloads sequencing data from SRA/GEO — a critical first step for reproducing published analyses.' },
+  { id: 'm10-s2', instruction: 'Read what nf-core/fetchngs does. What types of accession IDs does it accept?', hint: 'fetchngs accepts SRR (run), SRX (experiment), SRS (sample), SRP (study), and GSE (GEO series) accessions — all in a single IDs file, one per line.' },
+  { id: 'm10-s3', instruction: 'Find the "Generate Samplesheet" block in the Module Registry. What does the --nf_core_pipeline parameter do?', hint: '--nf_core_pipeline sets which pipeline format the generated samplesheet uses. Set it to "rnaseq" to get a samplesheet ready for nextflow run nf-core/rnaseq.' },
+  { id: 'm10-s4', instruction: 'In the Builder, build the QC pipeline and simulate it. Now imagine the FASTQ files came from nf-core/fetchngs. What command would you run BEFORE the QC pipeline?', hint: 'Run: nextflow run nf-core/fetchngs --input ids.csv --nf_core_pipeline rnaseq --outdir fetchngs_results. Then use the generated samplesheet.csv as --input for nf-core/rnaseq.' },
+]
+
+export const MISSION_10: Mission = {
+  id: 'mission_fetchngs',
+  title: 'Download Public Data with nf-core/fetchngs',
+  description: 'Learn how to download sequencing data from SRA/ENA/GEO using nf-core/fetchngs and auto-generate a samplesheet for downstream nf-core pipelines.',
+  steps: M10_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── Mission 11: Explore nf-core/chipseq ─────────────────────────────────────
+
+const M11_STEPS: MissionStep[] = [
+  { id: 'm11-s1', instruction: 'Go to Packs and open the nf-core/chipseq pack page.', hint: 'Click "Packs" in the nav. chipseq is one of the most popular nf-core pipelines with 600+ citations.' },
+  { id: 'm11-s2', instruction: 'Read what nf-core/chipseq does. Why does ChIP-seq need a samplesheet with an "antibody" column?', hint: 'The antibody column links each IP sample to its input control. MACS3 peak calling needs the matched input to identify real enrichment vs background noise.' },
+  { id: 'm11-s3', instruction: 'Find the "Peak Calling" block in the Module Registry. What metric should you check first to assess ChIP-seq quality?', hint: 'FRiP (Fraction of Reads in Peaks). A value > 0.01 is the minimum for TF ChIP-seq. Low FRiP means poor antibody enrichment or failed IP.' },
+  { id: 'm11-s4', instruction: 'What is the difference between --broad and --narrowPeak mode in MACS3? Which would you use for H3K4me3?', hint: 'H3K4me3 is an active promoter mark with sharp, narrow peaks — use narrowPeak (default). H3K27me3 (repression) has broad, diffuse peaks — use --broad.' },
+  { id: 'm11-s5', instruction: 'Simulate the QC pipeline in the Builder. How would the analysis differ if you were processing ATAC-seq instead of ChIP-seq?', hint: 'ATAC-seq has no antibody/control — peaks represent open chromatin, not protein binding. You would skip the control sample pairing, but still use MACS3 for peak calling.' },
+]
+
+export const MISSION_11: Mission = {
+  id: 'mission_chipseq_explorer',
+  title: 'Explore nf-core/chipseq',
+  description: 'Learn ChIP-seq peak calling with MACS3, FRiP quality metrics, and how ChIP-seq differs from ATAC-seq and RNA-seq in the nf-core ecosystem.',
+  steps: M11_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9, MISSION_10, MISSION_11]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -226,6 +263,16 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '🔧',
     label: 'Pipeline Debugger',
     reflection: 'A colleague shares a paper using nf-core/rnaseq but didn\'t pin the version with -r. Why might their results be impossible to reproduce exactly 2 years later?',
+  },
+  mission_fetchngs: {
+    emoji: '⬇️',
+    label: 'Data Downloader',
+    reflection: 'A GEO series (GSE12345) has 50 samples. What does nf-core/fetchngs save you compared to manually downloading each file from the SRA website?',
+  },
+  mission_chipseq_explorer: {
+    emoji: '🧲',
+    label: 'Peak Caller',
+    reflection: 'Why does ChIP-seq peak calling require a matched input control sample while RNA-seq does not?',
   },
 }
 

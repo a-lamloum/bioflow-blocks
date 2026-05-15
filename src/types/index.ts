@@ -10,6 +10,13 @@ export type PackId =
   | 'single_cell'
   | 'fastq_basics'
   | 'nfcore_tools'
+  // Phase 8 packs
+  | 'chipseq'
+  | 'fetchngs'
+  | 'ampliseq'
+  | 'methylseq'
+  | 'differentialabundance'
+  | 'spatialvi'
 
 export type BlockStatus = 'available' | 'phase1' | 'phase2' | 'phase3'
 export type ExecutionMode = 'simulated' | 'mock' | 'command_generation' | 'coming_soon'
@@ -68,6 +75,47 @@ export type BlockType =
   | 'module_creator'
   | 'pipeline_linter'
   | 'test_data_fetcher'
+  // ─ ChIP-seq / nf-core/chipseq (Phase 8) ─
+  | 'chipseq_samplesheet'
+  | 'chipseq_fastqc'
+  | 'chipseq_trim'
+  | 'peak_calling'
+  | 'peak_annotation'
+  | 'consensus_peaks'
+  | 'chipseq_report'
+  // ─ Data Download / nf-core/fetchngs (Phase 8) ─
+  | 'sra_ids_input'
+  | 'download_reads'
+  | 'generate_samplesheet'
+  | 'fetchngs_report'
+  // ─ Amplicon / nf-core/ampliseq (Phase 8) ─
+  | 'ampliseq_samplesheet'
+  | 'primer_removal'
+  | 'asv_inference'
+  | 'taxonomy_classify'
+  | 'diversity_analysis'
+  | 'ampliseq_report'
+  // ─ Methylation / nf-core/methylseq (Phase 8) ─
+  | 'methylseq_samplesheet'
+  | 'bismark_align'
+  | 'methylation_extract'
+  | 'methylation_report'
+  // ─ Differential Abundance / nf-core/differentialabundance (Phase 8) ─
+  | 'count_matrix_input'
+  | 'sample_sheet_de'
+  | 'deseq2_de'
+  | 'volcano_de'
+  | 'heatmap_de'
+  | 'pathway_de'
+  | 'de_report'
+  // ─ Spatial Transcriptomics / nf-core/spatialvi (Phase 8) ─
+  | 'visium_samplesheet'
+  | 'spaceranger_count'
+  | 'spatial_qc'
+  | 'spatial_normalization'
+  | 'spatial_clustering'
+  | 'spatial_visualization'
+  | 'spatialvi_report'
 
 export type DataType =
   | 'pipeline_context'
