@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { PipelineCanvas } from '@/components/canvas/PipelineCanvas'
 import { BlockLibrary } from '@/components/blocks/BlockLibrary'
