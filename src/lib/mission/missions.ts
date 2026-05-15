@@ -118,7 +118,46 @@ export const MISSION_6: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6]
+// ─── Mission 7: Read Your First Nextflow Script ───────────────────────────────
+
+const M7_STEPS: MissionStep[] = [
+  { id: 'm7-s1', instruction: 'Go to the DSL2 Code Bridge page.', hint: 'Click "DSL2" in the navigation. The page shows the real Nextflow code behind your visual pipeline.' },
+  { id: 'm7-s2', instruction: 'Open the main.nf tab. Click the line that says "nextflow.enable.dsl = 2". What does it do?', hint: 'This activates DSL2 syntax. Without it, Nextflow falls back to DSL1 (older format). All nf-core pipelines require DSL2.' },
+  { id: 'm7-s3', instruction: 'Find the "include { FASTQC }" line. What does it import and from where?', hint: 'It imports the FASTQC module from the nf-core/modules GitHub repository. This is how nf-core reuses community-built process definitions.' },
+  { id: 'm7-s4', instruction: 'Find "Channel.fromSamplesheet(params.input)". What does this line create?', hint: 'It reads your samplesheet CSV and creates a typed data stream (channel) emitting [meta, fastq_1, fastq_2] tuples — one per row in the CSV.' },
+  { id: 'm7-s5', instruction: 'Open the Meta Maps tab. What three fields does the "meta" map carry through the pipeline?', hint: 'meta contains: id (sample name), single_end (true/false for library type), and strandedness (auto/forward/reverse).' },
+  { id: 'm7-s6', instruction: 'Go back to the Builder and simulate the pipeline. Then compare the trace to the main.nf code — can you match each trace entry to a process call?', hint: 'Each "FASTQC(ch_reads)" call in main.nf = one trace entry. "MULTIQC(ch_multiqc_files)" = the last trace entry before output.' },
+]
+
+export const MISSION_7: Mission = {
+  id: 'mission_read_dsl2_script',
+  title: 'Read Your First Nextflow Script',
+  description: 'Explore the real Nextflow DSL2 code generated from your visual pipeline — includes, channel creation, process calls, and the meta map convention.',
+  steps: M7_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── Mission 8: Understand the Work Directory ─────────────────────────────────
+
+const M8_STEPS: MissionStep[] = [
+  { id: 'm8-s1', instruction: 'Go to the DSL2 Code Bridge and open the "Work Directory" tab.', hint: 'Click "DSL2" in the nav, then the "Work Directory" tab. It shows what Nextflow creates for every process execution.' },
+  { id: 'm8-s2', instruction: 'Click ".command.sh". What does this file contain and why is it useful for debugging?', hint: '.command.sh contains the exact shell command Nextflow ran. When a process fails, copy this and run it manually to reproduce the error.' },
+  { id: 'm8-s3', instruction: 'Click ".exitcode". What does exit code 0 mean? What would exit code 137 mean?', hint: '0 = success. 137 = the process was killed by the OS, usually because it ran out of memory. Increase the memory directive in nextflow.config.' },
+  { id: 'm8-s4', instruction: 'Read the Resume Simulator section. If only sample SAMPLE1 FASTQ changed, which steps re-run and which are cached?', hint: 'FASTQC for SAMPLE1 re-runs (input changed). FASTQC for SAMPLE2 is cached. All downstream steps from SAMPLE1 (TRIMGALORE → STAR → ...) also re-run.' },
+  { id: 'm8-s5', instruction: 'Look at the run command in the main.nf tab. Add -resume to it. What does this flag tell Nextflow to do?', hint: '-resume tells Nextflow to check the work directory hash for each process. If inputs match a previous run, use the cached output instead of re-running.' },
+]
+
+export const MISSION_8: Mission = {
+  id: 'mission_work_directory',
+  title: 'Understand the Work Directory',
+  description: 'Learn what Nextflow writes inside work/ab/cd12ef.../ for every process — and how -resume uses this to cache completed steps.',
+  steps: M8_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -153,6 +192,16 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '🦠',
     label: 'Microbiome Analyst',
     reflection: 'A clinical metagenomic sample from a patient gut contains 80% human reads. Why is the host removal step critical before running Kraken2?',
+  },
+  mission_read_dsl2_script: {
+    emoji: '📄',
+    label: 'DSL2 Reader',
+    reflection: 'Every nf-core module receives a [meta, file] tuple. Why does meta travel unchanged through every step instead of just passing raw file paths?',
+  },
+  mission_work_directory: {
+    emoji: '📁',
+    label: 'Work Dir Explorer',
+    reflection: 'If you run the same pipeline twice without -resume and with -resume, what is the practical difference for a 100-sample whole-genome sequencing dataset?',
   },
 }
 
