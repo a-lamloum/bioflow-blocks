@@ -157,7 +157,26 @@ export const MISSION_8: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8]
+// ─── Mission 9: Troubleshoot a Broken Pipeline ───────────────────────────────
+
+const M9_STEPS: MissionStep[] = [
+  { id: 'm9-s1', instruction: 'Go to the Troubleshoot page and open the Error Decoder tab.', hint: 'Click "Troubleshoot" in the navigation. The error decoder has 10 common nf-core errors with plain-language fixes.' },
+  { id: 'm9-s2', instruction: 'Find the "Out of memory (OOM kill)" error. What exit code does it produce and why?', hint: 'Exit code 137 = 128 + 9. In Linux, 128 + N means the process was killed by signal N. Signal 9 (SIGKILL) is the OOM killer.' },
+  { id: 'm9-s3', instruction: 'Find the "Input file not found" error. Why should samplesheet paths be absolute rather than relative?', hint: 'Nextflow processes run in isolated work directories, not your current directory. Relative paths would resolve relative to the work dir, not where you launched nextflow.' },
+  { id: 'm9-s4', instruction: 'Open the nextflow log tab. Click the FAILED row (STAR_ALIGN RAP1_IAA_30M_REP1). Where would you look first to find the error message?', hint: 'Check .command.err and .exitcode in the work directory for that process. Use nextflow log <run_name> to find the work directory path.' },
+  { id: 'm9-s5', instruction: 'Open the Pipeline Versioning tab. Add -r 3.14.0 to the generated command. Why is this important for publications?', hint: 'Without pinning the version, running the same command in 6 months may use different tool versions and produce different results. Pin the version in your Methods section.' },
+]
+
+export const MISSION_9: Mission = {
+  id: 'mission_troubleshoot',
+  title: 'Troubleshoot a Broken Pipeline',
+  description: 'Learn to diagnose and fix the most common nf-core errors — exit code 137, file not found, Docker permissions — and pin pipeline versions for reproducibility.',
+  steps: M9_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -202,6 +221,11 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '📁',
     label: 'Work Dir Explorer',
     reflection: 'If you run the same pipeline twice without -resume and with -resume, what is the practical difference for a 100-sample whole-genome sequencing dataset?',
+  },
+  mission_troubleshoot: {
+    emoji: '🔧',
+    label: 'Pipeline Debugger',
+    reflection: 'A colleague shares a paper using nf-core/rnaseq but didn\'t pin the version with -r. Why might their results be impossible to reproduce exactly 2 years later?',
   },
 }
 

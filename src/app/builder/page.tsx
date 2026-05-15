@@ -254,6 +254,9 @@ export default function BuilderPage() {
           <Link href="/dsl2" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             DSL2
           </Link>
+          <Link href="/troubleshoot" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
+            🔧 Troubleshoot
+          </Link>
           <Link href="/test-run" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             🧪 Test Run
           </Link>
