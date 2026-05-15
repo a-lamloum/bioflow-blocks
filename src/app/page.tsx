@@ -129,6 +129,11 @@ export default function LandingPage() {
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
             Modules
           </Link>
+          <Link href="/test-run"
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
+            style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
+            🧪 Test Run
+          </Link>
           <ThemeToggle variant="dark-surface" />
           <AuthButton variant="dark-surface" />
           <Link href="/builder"

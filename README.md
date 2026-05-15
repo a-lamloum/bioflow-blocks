@@ -27,7 +27,7 @@
 </p>
 
 <p>
-  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--3%20Complete-brightgreen?style=flat-square" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--4%20Complete-brightgreen?style=flat-square" />
   <img alt="Tests" src="https://img.shields.io/badge/Tests-111%20passing-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
@@ -72,13 +72,14 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
-## Features (Phase 0–3 complete)
+## Features (Phase 0–4 complete)
 
 - **Visual pipeline canvas** — Scratch-style puzzle-connector blocks, drag-and-drop, React Flow DAG
 - **45 blocks across 7 nf-core packs** — from nf-core/rnaseq to nf-core/sarek, nf-core/scrnaseq, and more
 - **Connection validation** — incompatible connections rejected with a beginner-friendly toast
 - **Mock simulation engine** — pure, deterministic, client-side; trace + QC report in under 3 seconds
 - **Block inspector** — beginner explanation + nf-core module name always visible side by side
+- **Test Run page** (`/test-run`) — Phase 4: real nf-core/rnaseq test dataset (GSE110004, S. cerevisiae, 6 samples, ~2 MB FASTQs), simulated execution with realistic Nextflow trace, per-sample QC stats, and interactive output directory explorer
 - **Command Bridge** — interactive dissector: click any part of the `nextflow run` command to get a plain-language explanation, nf-core docs link, and real-world examples
 - **Profile selector** — choose docker/singularity/conda/test with explanations; updates the full command instantly
 - **Params JSON preview** — see the `params.json` file that maps to your pipeline choices, with copy button
@@ -225,7 +226,7 @@ Every block in BioFlow Blocks maps to a real nf-core or Nextflow concept:
 | **Phase 1** | ✅ Complete | Project save/load (localStorage), editable samplesheet validator, module registry at `/modules` |
 | **Phase 2** | ✅ Complete | Mission map, 3 missions, completion badges, reflection questions, dark mode, 45-block library |
 | **Phase 3** | ✅ Complete | Command Bridge — interactive command dissector, profile selector, params JSON preview, docs integration |
-| **Phase 4** | 🔜 Planned | Tiny test-data execution in a sandboxed worker |
+| **Phase 4** | ✅ Complete | Tiny test-data execution — real nf-core/rnaseq test dataset (GSE110004, S. cerevisiae), realistic trace, QC stats, output explorer at `/test-run` |
 | **Phase 5** | 🔜 Planned | nf-core concept packs — Variant Calling, Metagenomics, scRNA-seq (blocks already defined) |
 
 ---

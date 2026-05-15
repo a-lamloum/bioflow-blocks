@@ -248,6 +248,9 @@ export default function BuilderPage() {
           <Link href="/modules" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             Modules
           </Link>
+          <Link href="/test-run" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
+            🧪 Test Run
+          </Link>
 
           {/* Active mission chip */}
           <div

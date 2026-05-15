@@ -61,11 +61,30 @@ export const MISSION_3: Mission = {
 
 // ─── All missions ──────────────────────────────────────────────────────────────
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3]
+// ─── Mission 4: Run with Test Data ───────────────────────────────────────────
+
+const M4_STEPS: MissionStep[] = [
+  { id: 'm4-s1', instruction: 'Go to the Test Run page and read the dataset description.', hint: 'Click "Test Run" in the navigation. The dataset is GSE110004 — real yeast RNA-seq from nf-core/test-datasets.' },
+  { id: 'm4-s2', instruction: 'Click "Simulate Test Run" and watch the progress bar.', hint: 'The progress bar simulates the actual nf-core/rnaseq processing steps: index building → QC → alignment → quantification → report.' },
+  { id: 'm4-s3', instruction: 'Open the Trace tab and find the STAR_ALIGN process. How long did it take?', hint: 'Look for NFCORE_RNASEQ:RNASEQ:ALIGN_STAR:STAR_ALIGN in the trace. The time column shows wall-clock time per sample.' },
+  { id: 'm4-s4', instruction: 'Open the QC Stats tab. Which sample has the highest alignment rate?', hint: 'Look at the %mapped column. Values above 90% are excellent for yeast RNA-seq.' },
+  { id: 'm4-s5', instruction: 'Open the Outputs tab and find multiqc_report.html. What directory is it in?', hint: 'The MultiQC report is always in results/multiqc/. It aggregates QC from every step into one interactive HTML file.' },
+]
+
+export const MISSION_4: Mission = {
+  id: 'mission_test_data',
+  title: 'Run with Test Data',
+  description: 'Learn how nf-core/rnaseq uses its official test dataset (GSE110004) — explore the real trace, QC stats, and output file structure.',
+  steps: M4_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
-export const MISSION_BADGES: Record<string, { emoji: string; label: string; reflection: string }> = {
+export const MISSION_BADGES: Record<string, { emoji: string; label: string; reflection: string; testRunUrl?: string }> = {
   mission_first_qc_pipeline: {
     emoji: '🔬',
     label: 'Pipeline Builder',
@@ -80,6 +99,12 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '⌨️',
     label: 'Command Crafter',
     reflection: 'What does -profile docker tell Nextflow to do differently?',
+  },
+  mission_test_data: {
+    emoji: '🧪',
+    label: 'Test Data Explorer',
+    reflection: 'Why does nf-core/rnaseq use a tiny yeast dataset (S. cerevisiae chr I) for its test profile rather than a human sample?',
+    testRunUrl: '/test-run',
   },
 }
 
