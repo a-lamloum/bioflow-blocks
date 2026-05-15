@@ -226,33 +226,33 @@ Every block in BioFlow Blocks maps to a real nf-core or Nextflow concept:
 
 ## Roadmap
 
-| Phase | Status | Description |
-|---|---|---|
-| **Phase 0** | ✅ Complete | Visual prototype — 7 blocks, canvas, mock simulation, first mission |
-| **Phase 1** | ✅ Complete | Project save/load (localStorage), editable samplesheet validator, module registry at `/modules` |
-| **Phase 2** | ✅ Complete | Mission map, 3 missions, completion badges, reflection questions, dark mode, 45-block library |
-| **Phase 3** | ✅ Complete | Command Bridge — interactive command dissector, profile selector, params JSON preview, docs integration |
-| **Phase 4** | ✅ Complete | Tiny test-data execution — real nf-core/rnaseq test dataset (GSE110004, S. cerevisiae), realistic trace, QC stats, output explorer at `/test-run` |
-| **Phase 5** | ✅ Complete | nf-core concept packs — dedicated pack pages, 6 missions (incl. nf-core/sarek + nf-core/taxprofiler), pack explorer at `/packs` |
-| **Phase 6** | ✅ Complete | **Nextflow DSL2 Code Bridge** — show the real Nextflow code (`process {}`, `workflow {}`) behind each visual block; meta map `[meta, file]` convention; channel operators (`map`, `groupTuple`, `combine`); work directory concept; `-resume` flag; aligned with [training.nextflow.io](https://training.nextflow.io/latest/) Tracks 1–2 |
-| **Phase 7** | ✅ Complete | **Execution, Resume & Troubleshooting** — exit code decoder, work directory explorer, resume simulator, `nextflow log` viewer, institutional configs, pipeline versioning (`-r`); aligned with the official *Troubleshooting* side quest |
-| **Phase 8** | ✅ Complete | **Extended Pipeline Packs** — nf-core/chipseq (epigenomics), nf-core/fetchngs (SRA/GEO download), nf-core/ampliseq (16S amplicon), nf-core/methylseq, nf-core/differentialabundance, nf-core/spatialvi (spatial transcriptomics); covering more of the [149 nf-core pipelines](https://nf-co.re/pipelines) |
-| **Phase 9** | ✅ Complete | **nf-core Developer Track** — module anatomy (`main.nf`, `meta.yml`, `environment.yml`, `tests/`), nf-test framework, Biocontainers browser, PR checklist, `nf-core create` template wizard; aligned with the official [*Hello nf-core* course](https://training.nextflow.io/latest/) (5 parts) |
-| **Phase 10** | 🔜 Planned | **Seqera Platform Bridge** — launch pipelines from Seqera Platform (Tower), compute environments (AWS Batch, GCP, Azure, SLURM), workspaces, datasets, and run monitoring |
+All phases aligned with [training.nextflow.io](https://training.nextflow.io/latest/) and [nf-co.re](https://nf-co.re) (149 pipelines, 1 400+ modules).
 
-### Coverage gap analysis
+| Phase | Status | What was built | Key resources |
+|---|---|---|---|
+| **Phase 0** | ✅ Complete | Visual pipeline builder — Scratch-style blocks, drag-and-drop canvas, 7-block RNA-seq QC workflow, mock simulator, first guided mission | `/builder` |
+| **Phase 1** | ✅ Complete | Project save/load (localStorage + Supabase), editable samplesheet validator with per-cell errors, searchable module registry | `/modules` |
+| **Phase 2** | ✅ Complete | Mission map with 3 missions + badges, reflection questions, dark/light theme, 45-block library across 7 nf-core packs | `/missions` |
+| **Phase 3** | ✅ Complete | Command Bridge — interactive `nextflow run` dissector (6 clickable chips), profile selector (docker/singularity/conda/test), params JSON preview, nf-core docs links | `/builder` Run panel |
+| **Phase 4** | ✅ Complete | Tiny test-data execution — real nf-core/rnaseq test dataset (GSE110004, S. cerevisiae, 6 samples), Nextflow trace, per-sample QC stats, clickable output file tree, gene expression matrix | `/test-run` |
+| **Phase 5** | ✅ Complete | Per-pipeline learning hubs for all 7 packs; 6 missions including nf-core/sarek (variant calling) and nf-core/taxprofiler (metagenomics); pack explorer | `/packs` |
+| **Phase 6** | ✅ Complete | Nextflow DSL2 Code Bridge — annotated `main.nf` generated from visual pipeline; meta map `[meta, file]` visualiser; 5 channel operators (map/groupTuple/combine/branch/collect); work directory file explorer; `-resume` simulator; annotated `nextflow.config` | `/dsl2` |
+| **Phase 7** | ✅ Complete | Execution & Troubleshooting — 10 common nf-core errors with root causes + fixes; interactive `nextflow log` table; pipeline versioning (`-r`) builder; 4 institutional config profiles (UPPMAX, AWS Batch, GCP, SLURM) | `/troubleshoot` |
+| **Phase 8** | ✅ Complete | 6 new pipeline packs + 35 blocks: nf-core/chipseq (epigenomics, MACS3 peak calling), nf-core/fetchngs (SRA/GEO download), nf-core/ampliseq (16S/ITS DADA2), nf-core/methylseq (Bismark WGBS), nf-core/differentialabundance (DESeq2 + Shinyngs), nf-core/spatialvi (Visium spatial) | `/packs` |
+| **Phase 9** | ✅ Complete | nf-core Developer Track — annotated FASTQC module (main.nf/meta.yml/environment.yml/tests); nf-test when/then/snapshot concepts; Biocontainers browser (Bioconda→Quay.io pipeline); interactive PR checklist (19 items); 7-step dev workflow | `/developer` |
+| **Phase 10** | 🔜 Planned | **Seqera Platform Bridge** — launching pipelines from Seqera Platform (Tower), compute environments (AWS Batch, GCP, Azure, SLURM), workspaces, datasets, run monitoring | — |
 
-A comparison of BioFlow Blocks against [training.nextflow.io](https://training.nextflow.io/latest/) and [nf-co.re](https://nf-co.re) identified the following gaps driving Phases 6–10:
+### Coverage vs official resources
 
-| Gap | Priority | Target phase |
-|---|---|---|
-| Nextflow DSL2 language (channels, processes, workflows, config) | 🔴 High | Phase 6 |
-| `-resume`, work directory, exit codes, troubleshooting | 🔴 High | Phase 7 |
-| Missing pipeline categories (epigenomics, amplicon, spatial, proteomics) | 🟡 Medium | Phase 8 |
-| nf-core module writing, nf-test, meta.yml, Biocontainers | 🟡 Medium | Phase 9 |
-| Seqera Platform / Tower integration | 🟢 Low | Phase 10 |
+Comparison against [training.nextflow.io](https://training.nextflow.io/latest/) and [nf-co.re](https://nf-co.re):
 
-The biggest single gap: the official training teaches *how Nextflow works* (DSL2 language, channels, the work directory, resume). BioFlow currently teaches *which nf-core pipelines exist* and how to run them. Phase 6 closes that core gap.
+| Topic | Official resource | BioFlow phase | Status |
+|---|---|---|---|
+| Nextflow DSL2 channels, processes, workflows | training.nextflow.io Tracks 1–2 | Phase 6 | ✅ Covered |
+| `-resume`, work directory, exit codes | *Troubleshooting* side quest | Phase 7 | ✅ Covered |
+| 149 nf-core pipelines (epigenomics, amplicon, spatial…) | nf-co.re/pipelines | Phase 8 | ✅ Covered (80 blocks, 13 packs) |
+| Module anatomy, nf-test, Biocontainers, PR review | *Hello nf-core* 5-part course | Phase 9 | ✅ Covered |
+| Seqera Platform (Tower) | seqera.io | Phase 10 | 🔜 Planned |
 
 ---
 
