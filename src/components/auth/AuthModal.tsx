@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { getClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 
@@ -59,18 +60,26 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     }
   }
 
-  return (
+  // Portal ref — mount at document.body to escape any sticky/z-index stacking context
+  const portalRoot = typeof document !== 'undefined' ? document.body : null
+  if (!portalRoot) return null
+
+  const modal = (
     <>
-      {/* Backdrop */}
+      {/* Full-screen backdrop — fixed to viewport */}
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'oklch(0% 0 0 / 0.60)', backdropFilter: 'blur(4px)' }}
+        className="fixed inset-0 flex items-center justify-center p-4"
+        style={{ zIndex: 9999, background: 'oklch(0% 0 0 / 0.65)', backdropFilter: 'blur(6px)' }}
         onClick={onClose}
       >
-        {/* Card */}
+        {/* Centred card */}
         <div
           className="relative w-full max-w-sm rounded-2xl p-8 shadow-2xl"
-          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 24px 80px oklch(0% 0 0 / 0.40)',
+          }}
           onClick={e => e.stopPropagation()}
         >
           {/* Close */}
@@ -199,4 +208,6 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
       </div>
     </>
   )
+
+  return createPortal(modal, portalRoot)
 }
