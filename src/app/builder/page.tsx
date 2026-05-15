@@ -257,6 +257,9 @@ export default function BuilderPage() {
           <Link href="/developer" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             Developer
           </Link>
+          <Link href="/seqera" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
+            🔷 Seqera
+          </Link>
           <Link href="/troubleshoot" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-secondary hover:text-teal-500 hover:bg-teal-50 transition-colors">
             🔧 Troubleshoot
           </Link>

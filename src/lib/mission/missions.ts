@@ -251,7 +251,26 @@ export const MISSION_13: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9, MISSION_10, MISSION_11, MISSION_12, MISSION_13]
+// ─── Mission 14: Launch from Seqera Platform ──────────────────────────────────
+
+const M14_STEPS: MissionStep[] = [
+  { id: 'm14-s1', instruction: 'Go to the Seqera Platform page and open the Platform Concepts tab.', hint: 'Click "Seqera" in the navigation. Seqera Platform is the production environment for nf-core pipelines — it replaces running nextflow on the command line for team-scale work.' },
+  { id: 'm14-s2', instruction: 'Click on "Workspace" in the concept map. What is the relationship between an Organization and a Workspace?', hint: 'An Organization is the top-level account (your institution). A Workspace is isolated within it — one per project. Different workspaces can have different compute environments and team members.' },
+  { id: 'm14-s3', instruction: 'Click on "Dataset" in the concept map. How does a Seqera Dataset relate to the samplesheet you edited in BioFlow?', hint: 'A Dataset is the same CSV samplesheet from BioFlow — uploaded and versioned in Seqera. Instead of a file path, Seqera stages it for you to any compute environment.' },
+  { id: 'm14-s4', instruction: 'Open the BioFlow → Seqera tab. Find the row where "Pipeline version (-r 3.14.0)" maps to Seqera. What is the Seqera field called?', hint: 'The -r flag in the CLI becomes the "Pipeline Revision" field in Seqera. Same purpose — pins the exact git tag so results are reproducible.' },
+  { id: 'm14-s5', instruction: 'Open the Launch Walkthrough tab. In Step 6 (Monitor the Run), what Seqera feature replaces running "nextflow log" in the terminal?', hint: 'The Seqera Runs task table shows the same information as nextflow log — process status, exit codes, CPU%, memory — but as a live web UI. Failed tasks show .command.err inline.' },
+]
+
+export const MISSION_14: Mission = {
+  id: 'mission_seqera',
+  title: 'Launch from Seqera Platform',
+  description: 'Learn how Seqera Platform connects to nf-core — Workspaces, Datasets, Compute Environments, pipeline launch, and run monitoring.',
+  steps: M14_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9, MISSION_10, MISSION_11, MISSION_12, MISSION_13, MISSION_14]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -321,6 +340,11 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '🧪',
     label: 'Test Writer',
     reflection: 'Why does nf-test use snapshot testing (comparing MD5 hashes) rather than just checking that the process succeeded with exit code 0?',
+  },
+  mission_seqera: {
+    emoji: '🔷',
+    label: 'Platform Engineer',
+    reflection: 'A team of 10 bioinformaticians all need to run nf-core/rnaseq on the same AWS Batch setup. How does Seqera Platform make this easier than each person managing their own nextflow config files?',
   },
 }
 

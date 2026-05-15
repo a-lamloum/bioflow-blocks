@@ -27,7 +27,7 @@
 </p>
 
 <p>
-  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--9%20Complete-brightgreen?style=flat-square" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-All%2010%20Phases%20Complete-brightgreen?style=flat-square" />
   <img alt="Tests" src="https://img.shields.io/badge/Tests-181%20passing-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
@@ -72,13 +72,14 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
-## Features (Phase 0–9 complete)
+## Features (All 10 phases complete)
 
 - **Visual pipeline canvas** — Scratch-style puzzle-connector blocks, drag-and-drop, React Flow DAG
 - **45 blocks across 7 nf-core packs** — from nf-core/rnaseq to nf-core/sarek, nf-core/scrnaseq, and more
 - **Connection validation** — incompatible connections rejected with a beginner-friendly toast
 - **Mock simulation engine** — pure, deterministic, client-side; trace + QC report in under 3 seconds
 - **Block inspector** — beginner explanation + nf-core module name always visible side by side
+- **Seqera Platform Bridge** (`/seqera`) — Phase 10: 7 Seqera concepts (Organization, Workspace, Compute Environment, Dataset, Pipeline, Run, Action); BioFlow→Seqera mapping (samplesheet=Dataset, profile=Compute Env, -r=Revision, params.json=Launch params); 6-step launch walkthrough; 6 compute environments; learning journey "YOU ARE HERE" diagram; Mission 14 (🔷 Platform Engineer)
 - **Developer Track** (`/developer`) — Phase 9: annotated FASTQC module anatomy (main.nf, meta.yml, environment.yml, tests/main.nf.test); interactive nf-test explorer (when/then/snapshot concepts + run commands); Biocontainers browser (Bioconda→Quay.io/Docker Hub pipeline); interactive PR checklist (19 items across 6 categories); 7-step dev workflow with commands; 2 new missions (📋 Module Annotator, 🧪 Test Writer); aligned with the official Hello nf-core 5-part course
 - **6 new pipeline packs** (Phase 8) — nf-core/chipseq (epigenomics, 7 blocks), nf-core/fetchngs (data download, 4 blocks), nf-core/ampliseq (16S/ITS amplicon, 6 blocks), nf-core/methylseq (bisulfite sequencing, 4 blocks), nf-core/differentialabundance (DE analysis, 7 blocks), nf-core/spatialvi (Visium spatial transcriptomics, 7 blocks); 35 new blocks; 2 new missions (⬇️ Data Downloader, 🧲 Peak Caller); 181 tests passing
 - **Troubleshoot page** (`/troubleshoot`) — Phase 7: 10 common nf-core errors with exit codes, root causes, and step-by-step fixes; interactive `nextflow log` table with column/row explanations; pipeline versioning (`-r` flag) interactive builder; institutional config profiles (UPPMAX, AWS Batch, GCP, generic SLURM)
@@ -240,7 +241,7 @@ All phases aligned with [training.nextflow.io](https://training.nextflow.io/late
 | **Phase 7** | ✅ Complete | Execution & Troubleshooting — 10 common nf-core errors with root causes + fixes; interactive `nextflow log` table; pipeline versioning (`-r`) builder; 4 institutional config profiles (UPPMAX, AWS Batch, GCP, SLURM) | `/troubleshoot` |
 | **Phase 8** | ✅ Complete | 6 new pipeline packs + 35 blocks: nf-core/chipseq (epigenomics, MACS3 peak calling), nf-core/fetchngs (SRA/GEO download), nf-core/ampliseq (16S/ITS DADA2), nf-core/methylseq (Bismark WGBS), nf-core/differentialabundance (DESeq2 + Shinyngs), nf-core/spatialvi (Visium spatial) | `/packs` |
 | **Phase 9** | ✅ Complete | nf-core Developer Track — annotated FASTQC module (main.nf/meta.yml/environment.yml/tests); nf-test when/then/snapshot concepts; Biocontainers browser (Bioconda→Quay.io pipeline); interactive PR checklist (19 items); 7-step dev workflow | `/developer` |
-| **Phase 10** | 🔜 Planned | **Seqera Platform Bridge** — launching pipelines from Seqera Platform (Tower), compute environments (AWS Batch, GCP, Azure, SLURM), workspaces, datasets, run monitoring | — |
+| **Phase 10** | ✅ Complete | **Seqera Platform Bridge** — 7 platform concepts (Org/Workspace/Compute Env/Dataset/Pipeline/Run/Action); BioFlow→Seqera mapping table; 6-step launch walkthrough; 6 compute environment profiles; learning journey diagram | `/seqera` |
 
 ### Coverage vs official resources
 
@@ -252,7 +253,7 @@ Comparison against [training.nextflow.io](https://training.nextflow.io/latest/) 
 | `-resume`, work directory, exit codes | *Troubleshooting* side quest | Phase 7 | ✅ Covered |
 | 149 nf-core pipelines (epigenomics, amplicon, spatial…) | nf-co.re/pipelines | Phase 8 | ✅ Covered (80 blocks, 13 packs) |
 | Module anatomy, nf-test, Biocontainers, PR review | *Hello nf-core* 5-part course | Phase 9 | ✅ Covered |
-| Seqera Platform (Tower) | seqera.io | Phase 10 | 🔜 Planned |
+| Seqera Platform (Tower) | seqera.io | Phase 10 | ✅ Covered |
 
 ---
 
