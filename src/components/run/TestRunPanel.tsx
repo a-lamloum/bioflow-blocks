@@ -241,42 +241,135 @@ export function TestRunPanel() {
       )}
 
       {activeTab === 'qc' && ran && (
-        <div className="flex flex-col gap-4">
-          <p className="text-xs text-fg-muted">
-            Pre-computed QC statistics matching what the real nf-core/rnaseq test run produces.
-          </p>
-          <div className="rounded-xl border border-border overflow-hidden text-xs">
-            <div className="grid font-semibold text-fg-muted border-b border-border"
-              style={{ gridTemplateColumns: '130px 90px 70px 70px 80px 80px', background: 'var(--color-surface-2)' }}>
-              <div className="px-3 py-2">sample</div>
-              <div className="px-3 py-2 text-right">reads</div>
-              <div className="px-3 py-2 text-right">Q30%</div>
-              <div className="px-3 py-2 text-right">%mapped</div>
-              <div className="px-3 py-2 text-right">genes</div>
-              <div className="px-3 py-2 text-right">med.TPM</div>
-            </div>
-            {Object.entries(NFCORE_TEST_QC_STATS).map(([name, stats], i) => (
-              <div key={name} className="grid border-b border-border last:border-0"
-                style={{ gridTemplateColumns: '130px 90px 70px 70px 80px 80px', background: i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-2)' }}>
-                <div className="px-3 py-1.5 font-semibold text-fg-primary truncate">{name}</div>
-                <div className="px-3 py-1.5 text-right text-fg-secondary font-mono">{(stats.totalReads / 1e6).toFixed(2)}M</div>
-                <div className="px-3 py-1.5 text-right font-mono"
-                  style={{ color: stats.q30Percent > 90 ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                  {stats.q30Percent}%
-                </div>
-                <div className="px-3 py-1.5 text-right font-mono"
-                  style={{ color: stats.uniquelyMapped > 88 ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                  {stats.uniquelyMapped}%
-                </div>
-                <div className="px-3 py-1.5 text-right text-fg-secondary font-mono">{stats.detectedGenes.toLocaleString()}</div>
-                <div className="px-3 py-1.5 text-right text-fg-muted font-mono">{stats.medianTPM}</div>
+        <div className="flex flex-col gap-5">
+          {/* Sample-level QC */}
+          <div>
+            <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-2">
+              Sample-level QC summary
+            </p>
+            <p className="text-xs text-fg-muted mb-3">
+              Pre-computed statistics matching what a real <code className="font-mono">nextflow run nf-core/rnaseq -profile test,docker</code> produces for GSE110004.
+            </p>
+            <div className="rounded-xl border border-border overflow-hidden text-xs">
+              <div className="grid font-semibold text-fg-muted border-b border-border"
+                style={{ gridTemplateColumns: '130px 90px 70px 70px 80px 80px', background: 'var(--color-surface-2)' }}>
+                <div className="px-3 py-2">sample</div>
+                <div className="px-3 py-2 text-right">reads</div>
+                <div className="px-3 py-2 text-right">Q30%</div>
+                <div className="px-3 py-2 text-right">%mapped</div>
+                <div className="px-3 py-2 text-right">genes</div>
+                <div className="px-3 py-2 text-right">med.TPM</div>
               </div>
-            ))}
+              {Object.entries(NFCORE_TEST_QC_STATS).map(([name, stats], i) => (
+                <div key={name} className="grid border-b border-border last:border-0"
+                  style={{ gridTemplateColumns: '130px 90px 70px 70px 80px 80px', background: i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-2)' }}>
+                  <div className="px-3 py-1.5 font-semibold text-fg-primary truncate">{name}</div>
+                  <div className="px-3 py-1.5 text-right text-fg-secondary font-mono">{(stats.totalReads / 1e6).toFixed(2)}M</div>
+                  <div className="px-3 py-1.5 text-right font-mono"
+                    style={{ color: stats.q30Percent > 90 ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                    {stats.q30Percent}%
+                  </div>
+                  <div className="px-3 py-1.5 text-right font-mono"
+                    style={{ color: stats.uniquelyMapped > 88 ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                    {stats.uniquelyMapped}%
+                  </div>
+                  <div className="px-3 py-1.5 text-right text-fg-secondary font-mono">{stats.detectedGenes.toLocaleString()}</div>
+                  <div className="px-3 py-1.5 text-right text-fg-muted font-mono">{stats.medianTPM}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-fg-muted mt-2">
+              ✓ All samples pass: Q30 ≥ 89%, uniquely mapped ≥ 87%, ≥4,600 genes detected.
+            </p>
           </div>
-          <div className="text-xs text-fg-muted leading-relaxed">
-            All samples pass QC: Q30 ≥ 89%, uniquely mapped ≥ 87%, ≥4,600 genes detected.
-            Results are consistent across conditions, indicating good library quality.
+
+          {/* Gene matrix preview */}
+          <div>
+            <p className="text-xs font-semibold text-fg-muted uppercase tracking-wide mb-1">
+              Gene expression matrix — salmon.merged.gene_tpm.tsv (preview)
+            </p>
+            <p className="text-xs text-fg-muted mb-3">
+              TPM values for selected S. cerevisiae chromosome I genes.
+              The full matrix contains ~6,000 genes.
+              <a
+                href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE110004"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 text-teal-500 hover:text-teal-600"
+              >
+                View GSE110004 on GEO ↗
+              </a>
+            </p>
+            <div className="rounded-xl border border-border overflow-x-auto text-xs">
+              <table className="font-mono w-full">
+                <thead>
+                  <tr style={{ background: 'var(--color-surface-2)' }}>
+                    <th className="px-3 py-2 text-left font-semibold text-fg-muted border-b border-border">gene_id</th>
+                    <th className="px-3 py-2 text-left font-semibold text-fg-muted border-b border-border">gene_name</th>
+                    <th className="px-3 py-2 text-right font-semibold text-fg-muted border-b border-border">WT_REP1</th>
+                    <th className="px-3 py-2 text-right font-semibold text-fg-muted border-b border-border">WT_REP2</th>
+                    <th className="px-3 py-2 text-right font-semibold text-fg-muted border-b border-border">RAP1_UNINDUCED</th>
+                    <th className="px-3 py-2 text-right font-semibold text-fg-muted border-b border-border">RAP1_IAA_30M</th>
+                    <th className="px-3 py-2 text-left font-semibold text-fg-muted border-b border-border">function</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: 'YAL003W', name: 'EFB1', wt1: '234.5', wt2: '228.9', uninduced: '241.2', iaa: '198.7', fn: 'Translation elongation factor' },
+                    { id: 'YAL005C', name: 'SSA1', wt1: '167.8', wt2: '172.3', uninduced: '165.4', iaa: '412.6', fn: 'Heat shock protein (stress response)' },
+                    { id: 'YAL007C', name: 'ERP2', wt1: '23.4', wt2: '22.8', uninduced: '24.1', iaa: '19.7', fn: 'ER retention protein' },
+                    { id: 'YAL009W', name: 'SPO7', wt1: '8.9', wt2: '9.1', uninduced: '8.7', iaa: '7.2', fn: 'Nuclear envelope morphogenesis' },
+                    { id: 'YAL012W', name: 'CYS3', wt1: '45.2', wt2: '43.8', uninduced: '46.1', iaa: '38.4', fn: 'Cystathionine gamma-lyase' },
+                    { id: 'YAL025C', name: 'MAK16', wt1: '31.7', wt2: '30.9', uninduced: '32.4', iaa: '28.1', fn: 'Nuclear protein, ribosome biogenesis' },
+                    { id: 'YAL030W', name: 'SNC1', wt1: '12.1', wt2: '11.8', uninduced: '12.5', iaa: '9.4', fn: 'Vesicle-associated membrane protein' },
+                    { id: 'YAL038W', name: 'CDC19', wt1: '892.3', wt2: '876.4', uninduced: '901.7', iaa: '743.2', fn: 'Pyruvate kinase (glycolysis) — highly expressed' },
+                    { id: 'YAL040C', name: 'CLN3', wt1: '4.2', wt2: '4.0', uninduced: '4.3', iaa: '3.8', fn: 'G1 cyclin, cell cycle control' },
+                    { id: 'YAL053W', name: 'FLC2', wt1: '6.8', wt2: '7.1', uninduced: '6.9', iaa: '5.8', fn: 'Flavin carrier' },
+                  ].map((gene, i) => (
+                    <tr key={gene.id} style={{ background: i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-2)' }}>
+                      <td className="px-3 py-1.5 border-b border-border">
+                        <a
+                          href={`https://www.yeastgenome.org/locus/${gene.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-teal-500 hover:text-teal-600"
+                        >
+                          {gene.id}
+                        </a>
+                      </td>
+                      <td className="px-3 py-1.5 border-b border-border font-semibold text-fg-primary">{gene.name}</td>
+                      <td className="px-3 py-1.5 border-b border-border text-right text-fg-secondary">{gene.wt1}</td>
+                      <td className="px-3 py-1.5 border-b border-border text-right text-fg-secondary">{gene.wt2}</td>
+                      <td className="px-3 py-1.5 border-b border-border text-right text-fg-secondary">{gene.uninduced}</td>
+                      <td className="px-3 py-1.5 border-b border-border text-right"
+                        style={{
+                          color: Math.abs(parseFloat(gene.iaa) - parseFloat(gene.wt1)) / parseFloat(gene.wt1) > 0.3
+                            ? 'var(--color-error)' : 'var(--color-fg-secondary)'
+                        }}>
+                        {gene.iaa}
+                      </td>
+                      <td className="px-3 py-1.5 border-b border-border text-fg-muted max-w-48 truncate" title={gene.fn}>{gene.fn}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-fg-muted mt-2">
+              Note SSA1 (heat shock protein) increases 2.5× in the IAA-treated condition — auxin-induced RAP1 depletion triggers stress response.
+              Red values = &gt;30% change vs WT.
+              Gene IDs link to SGD (Saccharomyces Genome Database).
+            </p>
           </div>
+
+          {/* nf-core output docs */}
+          <a
+            href="https://nf-co.re/rnaseq/docs/output"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-teal-500 hover:text-teal-600 self-start"
+          >
+            Full nf-core/rnaseq output documentation ↗
+          </a>
         </div>
       )}
 

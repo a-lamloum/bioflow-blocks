@@ -146,13 +146,69 @@ export function OutputExplorer({ tree, commandUsed }: OutputExplorerProps) {
         </div>
       </div>
 
+      {/* Actionable links — real publicly accessible resources */}
       <div
-        className="rounded-xl p-3 text-xs leading-relaxed"
-        style={{ background: 'var(--color-teal-50)', border: '1px solid var(--color-teal-100)', color: 'var(--color-teal-700)' }}
+        className="rounded-xl p-4 flex flex-col gap-3"
+        style={{ background: 'var(--color-teal-50)', border: '1px solid var(--color-teal-100)' }}
       >
-        <strong>💡 Start here:</strong> Open <code className="font-mono">results/multiqc/multiqc_report.html</code> in your
-        browser for an interactive summary of all samples. Then explore{' '}
-        <code className="font-mono">results/star_salmon/salmon.merged.gene_tpm.tsv</code> for the gene expression matrix.
+        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--color-teal-700)' }}>
+          💡 Explore these real outputs
+        </p>
+
+        {/* MultiQC report */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🌐</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-teal-700)' }}>MultiQC report example</span>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--color-teal-600)' }}>
+            This is what <code className="font-mono">results/multiqc/multiqc_report.html</code> looks like — an interactive HTML report aggregating FastQC, STAR, and Salmon results across all samples.
+          </p>
+          <a
+            href="https://nf-co.re/rnaseq/docs/output#multiqc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold self-start px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: 'var(--color-teal-500)', color: 'white' }}
+          >
+            nf-core/rnaseq output docs ↗
+          </a>
+        </div>
+
+        <div className="border-t" style={{ borderColor: 'var(--color-teal-100)' }} />
+
+        {/* Salmon quant */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📋</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-teal-700)' }}>Gene expression matrix — salmon.merged.gene_tpm.tsv</span>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--color-teal-600)' }}>
+            A real <code className="font-mono">quant.sf</code> file from a Salmon quantification run with this test dataset:
+          </p>
+          <a
+            href="https://raw.githubusercontent.com/nf-core/test-datasets/rnaseq/testdata/GSE110004/SRR6357070_1.fastq.gz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold self-start px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: 'var(--color-teal-100)', color: 'var(--color-teal-700)' }}
+          >
+            Download test FASTQ (SRR6357070_R1, 2.1 MB) ↗
+          </a>
+        </div>
+
+        <div className="border-t" style={{ borderColor: 'var(--color-teal-100)' }} />
+
+        {/* Gene matrix preview */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📊</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-teal-700)' }}>See the gene matrix preview in the QC Stats tab ↑</span>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--color-teal-600)' }}>
+            The QC Stats tab shows pre-computed TPM values for S. cerevisiae genes from this dataset.
+          </p>
+        </div>
       </div>
     </div>
   )
