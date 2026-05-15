@@ -80,7 +80,45 @@ export const MISSION_4: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4]
+// ─── Mission 5: Explore nf-core/sarek (Variant Calling) ──────────────────────
+
+const M5_STEPS: MissionStep[] = [
+  { id: 'm5-s1', instruction: 'Go to Packs and open the "nf-core/sarek" pack page.', hint: 'Click "Packs" in the navigation, then find the Variant Calling (nf-core/sarek) card.' },
+  { id: 'm5-s2', instruction: 'Read what nf-core/sarek does and who uses it.', hint: 'Sarek is a GATK best-practices germline variant calling pipeline. It identifies SNPs and INDELs in DNA sequencing data.' },
+  { id: 'm5-s3', instruction: 'Find the BWAMEM2_MEM module. What does it do and why is it different from STAR_ALIGN?', hint: 'BWA-MEM2 aligns DNA reads. It does NOT need to be splice-aware unlike STAR — DNA has no introns.' },
+  { id: 'm5-s4', instruction: 'In the Builder, connect: Start → Samplesheet → Input FASTQ → QC Step → Generate Report → Output Results. Simulate to see what the pre-variant-calling QC would look like.', hint: 'The QC step teaches the FASTQC module — the same quality check used before alignment in nf-core/sarek.' },
+  { id: 'm5-s5', instruction: 'Open the Module Registry and filter by "nf-core/sarek". Find GATK4_HAPLOTYPECALLER and read its technical detail.', hint: 'HaplotypeCaller is the variant calling step. It uses local de novo assembly to call SNPs and INDELs and outputs a GVCF file.' },
+]
+
+export const MISSION_5: Mission = {
+  id: 'mission_sarek_explorer',
+  title: 'Explore nf-core/sarek',
+  description: 'Learn the GATK best-practices germline variant calling pipeline — from BWA-MEM2 alignment to GATK HaplotypeCaller and VEP annotation.',
+  steps: M5_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── Mission 6: Explore nf-core/taxprofiler (Metagenomics) ───────────────────
+
+const M6_STEPS: MissionStep[] = [
+  { id: 'm6-s1', instruction: 'Go to Packs and open the "nf-core/taxprofiler" pack page.', hint: 'Click "Packs" in the navigation. taxprofiler classifies microbial communities from shotgun metagenomics data.' },
+  { id: 'm6-s2', instruction: 'Read about nf-core/taxprofiler. What is the difference between Kraken2 and MetaPhlAn?', hint: 'Kraken2 uses k-mer matching (fast, sensitive to database). MetaPhlAn uses marker genes (species-specific, database-independent).' },
+  { id: 'm6-s3', instruction: 'Open the Module Registry and filter by "nf-core/taxprofiler". Find KRAKEN2_KRAKEN2 and BOWTIE2_ALIGN. What does BOWTIE2_ALIGN do in the taxprofiler context?', hint: 'In taxprofiler, BOWTIE2_ALIGN is used for HOST REMOVAL — aligning reads to the human genome and discarding human reads before classification.' },
+  { id: 'm6-s4', instruction: 'In the Builder, simulate the full QC pipeline (6 blocks). The QC step maps to FastQC — explain why QC comes before host removal in a real metagenomic run.', hint: 'You need to check raw read quality FIRST so you know the baseline before host removal changes the read composition.' },
+  { id: 'm6-s5', instruction: 'Read about the KRONA_KTIMPORTTAXONOMY module. What type of output does it produce and where would you find it in the results directory?', hint: 'Krona makes an interactive HTML sunburst chart. In nf-core/taxprofiler it is in results/krona/ per classifier.' },
+]
+
+export const MISSION_6: Mission = {
+  id: 'mission_taxprofiler_explorer',
+  title: 'Explore nf-core/taxprofiler',
+  description: 'Learn the microbial community profiling pipeline — host removal, Kraken2 classification, Bracken abundance, and Krona visualisation.',
+  steps: M6_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -105,6 +143,16 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     label: 'Test Data Explorer',
     reflection: 'Why does nf-core/rnaseq use a tiny yeast dataset (S. cerevisiae chr I) for its test profile rather than a human sample?',
     testRunUrl: '/test-run',
+  },
+  mission_sarek_explorer: {
+    emoji: '🧬',
+    label: 'Variant Caller',
+    reflection: 'Why does nf-core/sarek use BWAMEM2_MEM (not STAR_ALIGN) for DNA alignment? What makes BWA-MEM2 suitable for germline variant calling?',
+  },
+  mission_taxprofiler_explorer: {
+    emoji: '🦠',
+    label: 'Microbiome Analyst',
+    reflection: 'A clinical metagenomic sample from a patient gut contains 80% human reads. Why is the host removal step critical before running Kraken2?',
   },
 }
 

@@ -31,8 +31,9 @@ function PackCard({ pack }: { pack: typeof PACKS[0] }) {
   const isAvailable = pack.available
 
   return (
-    <div
-      className="reveal flex flex-col gap-3 p-5 rounded-xl border transition-all"
+    <Link
+      href={`/packs/${pack.id}`}
+      className="reveal flex flex-col gap-3 p-5 rounded-xl border transition-all hover:shadow-md group"
       style={{
         borderColor: isAvailable ? pack.color + '55' : 'var(--color-border)',
         background: isAvailable ? pack.color + '0a' : 'var(--color-surface)',
@@ -41,7 +42,7 @@ function PackCard({ pack }: { pack: typeof PACKS[0] }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{pack.icon}</span>
-          <h3 className="text-base font-bold text-fg-primary">{pack.name}</h3>
+          <h3 className="text-base font-bold text-fg-primary group-hover:text-teal-600 transition-colors">{pack.name}</h3>
         </div>
         <span
           className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full"
@@ -54,8 +55,13 @@ function PackCard({ pack }: { pack: typeof PACKS[0] }) {
         </span>
       </div>
       <p className="text-sm text-fg-secondary leading-relaxed">{pack.description}</p>
-      <p className="text-xs text-fg-muted font-semibold">{blockCount} blocks</p>
-    </div>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-fg-muted font-semibold">{blockCount} blocks</p>
+        <span className="text-xs text-teal-500 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+          Explore →
+        </span>
+      </div>
+    </Link>
   )
 }
 
@@ -123,6 +129,11 @@ export default function LandingPage() {
             className="text-sm font-semibold px-4 py-2 rounded-lg"
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
             Missions
+          </Link>
+          <Link href="/packs"
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
+            style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
+            Packs
           </Link>
           <Link href="/modules"
             className="text-sm font-semibold px-4 py-2 rounded-lg"
@@ -242,6 +253,15 @@ export default function LandingPage() {
               <PackCard pack={pack} />
             </div>
           ))}
+        </div>
+
+        <div className="reveal text-center mt-10" style={{ transitionDelay: '200ms' }}>
+          <Link
+            href="/packs"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-border bg-surface text-sm font-semibold text-fg-primary hover:border-teal-500 hover:text-teal-600 transition-all"
+          >
+            View all {PACKS.length} nf-core packs →
+          </Link>
         </div>
       </section>
 
