@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, Suspense } from 'react'
 import { PipelineCanvas } from '@/components/canvas/PipelineCanvas'
 import { BlockLibrary } from '@/components/blocks/BlockLibrary'
 import { BlockInspector } from '@/components/inspector/BlockInspector'
@@ -88,7 +88,7 @@ const DEMO_IR: WorkflowIR = {
   ],
 }
 
-export default function BuilderPage() {
+function BuilderPageContent() {
   const searchParams = useSearchParams()
   // Pick the active mission from URL param, default to Mission 1
   const [activeMission, setActiveMission] = useState<Mission>(() => {
@@ -328,5 +328,13 @@ export default function BuilderPage() {
         onSimulate={handleSimulate}
       />
     </main>
+  )
+}
+
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-canvas" />}>
+      <BuilderPageContent />
+    </Suspense>
   )
 }
