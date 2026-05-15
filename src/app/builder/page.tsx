@@ -2,14 +2,14 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useCallback, useEffect, useRef, Suspense } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { PipelineCanvas } from '@/components/canvas/PipelineCanvas'
 import { BlockLibrary } from '@/components/blocks/BlockLibrary'
 import { BlockInspector } from '@/components/inspector/BlockInspector'
 import { MissionPanel } from '@/components/mission/MissionPanel'
 import { RunPanel } from '@/components/run/RunPanel'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+// useSearchParams removed — read via window.location.search in useEffect to avoid SSR issues
 import { ToastContainer } from '@/components/ui/Toast'
 import { TutorialWizard } from '@/components/tutorial/TutorialWizard'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -89,12 +89,16 @@ const DEMO_IR: WorkflowIR = {
 }
 
 function BuilderPageContent() {
-  const searchParams = useSearchParams()
-  // Pick the active mission from URL param, default to Mission 1
-  const [activeMission, setActiveMission] = useState<Mission>(() => {
-    const id = searchParams?.get('mission')
-    return MISSIONS.find(m => m.id === id) ?? MISSION_1
-  })
+  // Read ?mission= param client-side only — avoids useSearchParams SSR error on Vercel
+  const [activeMission, setActiveMission] = useState<Mission>(MISSION_1)
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('mission')
+    if (id) {
+      const found = MISSIONS.find(m => m.id === id)
+      if (found) setActiveMission(found)
+    }
+  }, [])
 
   const [nodes, setNodes] = useState<PipelineNode[]>([])
   const [edges, setEdges] = useState<PipelineEdge[]>([])
@@ -332,9 +336,5 @@ function BuilderPageContent() {
 }
 
 export default function BuilderPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-canvas" />}>
-      <BuilderPageContent />
-    </Suspense>
-  )
+  return <BuilderPageContent />
 }
