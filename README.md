@@ -27,7 +27,7 @@
 </p>
 
 <p>
-  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--8%20Complete-brightgreen?style=flat-square" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%200--9%20Complete-brightgreen?style=flat-square" />
   <img alt="Tests" src="https://img.shields.io/badge/Tests-181%20passing-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT--NC-blue?style=flat-square" />
   <img alt="nf-core" src="https://img.shields.io/badge/nf--core-aligned-23A559?style=flat-square" />
@@ -72,13 +72,14 @@ Learners drag colorful blocks onto a canvas, connect them into a pipeline, and c
 
 ---
 
-## Features (Phase 0–8 complete)
+## Features (Phase 0–9 complete)
 
 - **Visual pipeline canvas** — Scratch-style puzzle-connector blocks, drag-and-drop, React Flow DAG
 - **45 blocks across 7 nf-core packs** — from nf-core/rnaseq to nf-core/sarek, nf-core/scrnaseq, and more
 - **Connection validation** — incompatible connections rejected with a beginner-friendly toast
 - **Mock simulation engine** — pure, deterministic, client-side; trace + QC report in under 3 seconds
 - **Block inspector** — beginner explanation + nf-core module name always visible side by side
+- **Developer Track** (`/developer`) — Phase 9: annotated FASTQC module anatomy (main.nf, meta.yml, environment.yml, tests/main.nf.test); interactive nf-test explorer (when/then/snapshot concepts + run commands); Biocontainers browser (Bioconda→Quay.io/Docker Hub pipeline); interactive PR checklist (19 items across 6 categories); 7-step dev workflow with commands; 2 new missions (📋 Module Annotator, 🧪 Test Writer); aligned with the official Hello nf-core 5-part course
 - **6 new pipeline packs** (Phase 8) — nf-core/chipseq (epigenomics, 7 blocks), nf-core/fetchngs (data download, 4 blocks), nf-core/ampliseq (16S/ITS amplicon, 6 blocks), nf-core/methylseq (bisulfite sequencing, 4 blocks), nf-core/differentialabundance (DE analysis, 7 blocks), nf-core/spatialvi (Visium spatial transcriptomics, 7 blocks); 35 new blocks; 2 new missions (⬇️ Data Downloader, 🧲 Peak Caller); 181 tests passing
 - **Troubleshoot page** (`/troubleshoot`) — Phase 7: 10 common nf-core errors with exit codes, root causes, and step-by-step fixes; interactive `nextflow log` table with column/row explanations; pipeline versioning (`-r` flag) interactive builder; institutional config profiles (UPPMAX, AWS Batch, GCP, generic SLURM)
 - **DSL2 Code Bridge** (`/dsl2`) — Phase 6: annotated Nextflow DSL2 code generated from the visual pipeline; meta map `[meta, file]` visualizer; 5 channel operator diagrams (map, groupTuple, combine, branch, collect); interactive work directory explorer with file contents; `-resume` simulator showing cached vs re-run steps; `nextflow.config` annotated structure
@@ -236,7 +237,7 @@ Every block in BioFlow Blocks maps to a real nf-core or Nextflow concept:
 | **Phase 6** | ✅ Complete | **Nextflow DSL2 Code Bridge** — show the real Nextflow code (`process {}`, `workflow {}`) behind each visual block; meta map `[meta, file]` convention; channel operators (`map`, `groupTuple`, `combine`); work directory concept; `-resume` flag; aligned with [training.nextflow.io](https://training.nextflow.io/latest/) Tracks 1–2 |
 | **Phase 7** | ✅ Complete | **Execution, Resume & Troubleshooting** — exit code decoder, work directory explorer, resume simulator, `nextflow log` viewer, institutional configs, pipeline versioning (`-r`); aligned with the official *Troubleshooting* side quest |
 | **Phase 8** | ✅ Complete | **Extended Pipeline Packs** — nf-core/chipseq (epigenomics), nf-core/fetchngs (SRA/GEO download), nf-core/ampliseq (16S amplicon), nf-core/methylseq, nf-core/differentialabundance, nf-core/spatialvi (spatial transcriptomics); covering more of the [149 nf-core pipelines](https://nf-co.re/pipelines) |
-| **Phase 9** | 🔜 Planned | **nf-core Developer Track** — module anatomy (`main.nf`, `meta.yml`, `environment.yml`, `tests/`), nf-test framework, Biocontainers browser, PR checklist, `nf-core create` template wizard; aligned with the official [*Hello nf-core* course](https://training.nextflow.io/latest/) (5 parts) |
+| **Phase 9** | ✅ Complete | **nf-core Developer Track** — module anatomy (`main.nf`, `meta.yml`, `environment.yml`, `tests/`), nf-test framework, Biocontainers browser, PR checklist, `nf-core create` template wizard; aligned with the official [*Hello nf-core* course](https://training.nextflow.io/latest/) (5 parts) |
 | **Phase 10** | 🔜 Planned | **Seqera Platform Bridge** — launch pipelines from Seqera Platform (Tower), compute environments (AWS Batch, GCP, Azure, SLURM), workspaces, datasets, and run monitoring |
 
 ### Coverage gap analysis

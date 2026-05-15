@@ -213,7 +213,45 @@ export const MISSION_11: Mission = {
   completionCondition: 'simulation_success',
 }
 
-export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9, MISSION_10, MISSION_11]
+// ─── Mission 12: Annotate a Module with meta.yml ──────────────────────────────
+
+const M12_STEPS: MissionStep[] = [
+  { id: 'm12-s1', instruction: 'Go to the Developer Track page and open the Module Anatomy tab.', hint: 'Click "Developer" in the navigation. The Module Anatomy tab shows the 4 required files of a real nf-core module.' },
+  { id: 'm12-s2', instruction: 'Open the meta.yml tab. Find the "tools:" section. What 3 fields are required for each listed tool?', hint: 'Each tool needs: description (what the tool does), homepage (tool website URL), and licence (the tool\'s open-source licence, NOT the module\'s MIT licence).' },
+  { id: 'm12-s3', instruction: 'Find the "input:" section in meta.yml. What type should the meta field always be, and why?', hint: 'meta is always type: map — it\'s a Groovy Map (key-value pairs), not a file path. This tells users they should pass { id: "SAMPLE1", single_end: false } not a file.' },
+  { id: 'm12-s4', instruction: 'Find the "output:" section. Why must every nf-core module emit a "versions:" output pointing to versions.yml?', hint: 'versions.yml records the exact tool version used. MultiQC reads this to show software versions in reports. nf-core CI checks that every module emits it.' },
+  { id: 'm12-s5', instruction: 'In the PR Checklist tab, check which meta.yml items are required. How many of the 19 checklist items relate to meta.yml specifically?', hint: 'Check "meta.yml is present and fully documented" and "Input/output follows [meta, file] tuple convention". meta.yml completeness is also checked by nf-core lint.' },
+]
+
+export const MISSION_12: Mission = {
+  id: 'mission_meta_yml',
+  title: 'Annotate a Module with meta.yml',
+  description: 'Learn the nf-core meta.yml schema — tool metadata, input/output types, and the versions.yml requirement that every module must satisfy.',
+  steps: M12_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+// ─── Mission 13: Write an nf-test ─────────────────────────────────────────────
+
+const M13_STEPS: MissionStep[] = [
+  { id: 'm13-s1', instruction: 'Go to the Developer Track page and open the nf-test tab.', hint: 'Click "Developer" in the navigation, then the nf-test tab. nf-test is the official testing framework for nf-core modules.' },
+  { id: 'm13-s2', instruction: 'Read the "when {} block" concept. What do input[0], input[1], etc. represent?', hint: 'input[0] is the first channel in the process input: block. input[1] is the second. Order must match the process definition exactly.' },
+  { id: 'm13-s3', instruction: 'Read the "then {} block". What does snapshot(process.out).match() do on the FIRST run vs on SUBSEQUENT runs?', hint: 'First run: creates a .snap file capturing MD5 hashes of all outputs. Subsequent runs: compares current outputs against the .snap file. If anything changed, the test fails.' },
+  { id: 'm13-s4', instruction: 'Read the "Running tests" concept. What flag do you add when you intentionally changed a module and need to update the snapshots?', hint: '--update-snapshot flag: nf-test test --update-snapshot modules/nf-core/fastqc/tests/main.nf.test. Use with care — always review snapshot changes in PRs.' },
+  { id: 'm13-s5', instruction: 'Open the PR Checklist tab and find the Tests category. How many test-related checklist items are there, and which is the most important?', hint: 'There are 3 test items. The most important: "nf-test tests pass locally" — CI will reject the PR if tests fail. Always run nf-test before opening a PR.' },
+]
+
+export const MISSION_13: Mission = {
+  id: 'mission_nftest',
+  title: 'Write an nf-test',
+  description: 'Learn the nf-test framework used by all nf-core modules: when/then blocks, snapshot testing, and how to run tests locally before submitting a PR.',
+  steps: M13_STEPS,
+  requiredBlockTypes: ['start_pipeline', 'samplesheet', 'input_fastq', 'qc_step', 'generate_report', 'output_results'],
+  completionCondition: 'simulation_success',
+}
+
+export const MISSIONS: Mission[] = [MISSION_1, MISSION_2, MISSION_3, MISSION_4, MISSION_5, MISSION_6, MISSION_7, MISSION_8, MISSION_9, MISSION_10, MISSION_11, MISSION_12, MISSION_13]
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 
@@ -273,6 +311,16 @@ export const MISSION_BADGES: Record<string, { emoji: string; label: string; refl
     emoji: '🧲',
     label: 'Peak Caller',
     reflection: 'Why does ChIP-seq peak calling require a matched input control sample while RNA-seq does not?',
+  },
+  mission_meta_yml: {
+    emoji: '📋',
+    label: 'Module Annotator',
+    reflection: 'Why does nf-core require every module to emit a versions.yml file, even when the tool itself already reports its version in stdout?',
+  },
+  mission_nftest: {
+    emoji: '🧪',
+    label: 'Test Writer',
+    reflection: 'Why does nf-test use snapshot testing (comparing MD5 hashes) rather than just checking that the process succeeded with exit code 0?',
   },
 }
 

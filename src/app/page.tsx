@@ -145,6 +145,11 @@ export default function LandingPage() {
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
             Troubleshoot
           </Link>
+          <Link href="/developer"
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
+            style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
+            Developer
+          </Link>
           <Link href="/modules"
             className="text-sm font-semibold px-4 py-2 rounded-lg"
             style={{ color: 'oklch(75% 0.03 200)', background: 'oklch(100% 0 0 / 0.06)' }}>
